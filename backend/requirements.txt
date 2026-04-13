@@ -1,3 +1,6 @@
 fastapi
 uvicorn[standard]
 debugpy
+pytest
+pytest-cov
+httpx
