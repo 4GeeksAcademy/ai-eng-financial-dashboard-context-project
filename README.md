@@ -1,15 +1,6 @@
 # Financial Metrics Dashboard
 
-Dashboard de metricas financieras con frontend en React + TypeScript y backend en FastAPI.
-Este repositorio se usa para practicar analisis asistido por IA de reglas de trabajo y contexto.
-
-## Objetivo del proyecto
-
-Debes hacer un fork del proyecto, analizar el codigo con tu agente de IA preferido y producir:
-
-- Reglas de trabajo (flujo, calidad, estilo, validaciones y testing).
-- Reglas de contexto (arquitectura, decisiones tecnicas, convenciones y limites del dominio).
-- Un banco de memoria del proyecto para acelerar cambios futuros y mantener consistencia.
+_Dashboard de metricas financieras con frontend en React + TypeScript y backend en FastAPI._
 
 ## Pasos recomendados
 
