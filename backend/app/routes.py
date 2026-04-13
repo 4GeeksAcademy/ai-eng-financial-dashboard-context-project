@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections import defaultdict
-from datetime import date
+from datetime import date, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Query
@@ -46,6 +46,13 @@ class TopCategoryItem(BaseModel):
     category: Category
     operation_type: OperationType
     total_amount: float
+
+
+class MetricsComparison(BaseModel):
+    current_period: float
+    previous_period: float
+    delta_abs: float
+    delta_pct: float | None
 
 
 def _year_for_month(month: int, today: date) -> int:
@@ -194,6 +201,12 @@ def build_top_categories(
     ]
 
 
+def calculate_net_value(movements: list[FinancialMovement]) -> float:
+    income = sum(item.amount for item in movements if item.operation_type == "income")
+    outcome = sum(item.amount for item in movements if item.operation_type == "outcome")
+    return round(income - outcome, 2)
+
+
 @router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -252,6 +265,42 @@ def get_top_categories(
         movements, start_date, end_date, category=None, operation_type=operation_type
     )
     return build_top_categories(filtered, operation_type, limit)
+
+
+@router.get("/api/metrics/comparison", response_model=MetricsComparison)
+def get_metrics_comparison(
+    start_date: date = Query(...),
+    end_date: date = Query(...),
+    business_type: BusinessType | None = Query(default=None),
+) -> MetricsComparison:
+    movements = generate_mock_movements(seed=42)
+    if business_type is not None:
+        movements = [item for item in movements if item.business_type == business_type]
+
+    current_movements = filter_movements(
+        movements, start_date, end_date, category=None, operation_type=None
+    )
+    current_net = calculate_net_value(current_movements)
+
+    duration = end_date - start_date
+    previous_end = start_date - timedelta(days=1)
+    previous_start = previous_end - duration
+    previous_movements = filter_movements(
+        movements, previous_start, previous_end, category=None, operation_type=None
+    )
+    previous_net = calculate_net_value(previous_movements)
+
+    delta_abs = round(current_net - previous_net, 2)
+    delta_pct = None
+    if previous_net != 0:
+        delta_pct = round((delta_abs / abs(previous_net)) * 100, 2)
+
+    return MetricsComparison(
+        current_period=current_net,
+        previous_period=previous_net,
+        delta_abs=delta_abs,
+        delta_pct=delta_pct,
+    )
 
 
 @router.get("/api/metrics/b2b", response_model=list[FinancialMovement])

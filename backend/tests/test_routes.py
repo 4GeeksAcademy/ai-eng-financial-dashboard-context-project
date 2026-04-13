@@ -152,3 +152,19 @@ def test_top_categories_returns_limited_sorted_categories():
     assert len(payload) == 3
     assert payload[0]["total_amount"] >= payload[1]["total_amount"]
     assert all(item["operation_type"] == "outcome" for item in payload)
+
+
+def test_metrics_comparison_returns_delta_fields():
+    response = client.get(
+        "/api/metrics/comparison",
+        params={"start_date": "2025-03-01", "end_date": "2025-03-31"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert set(payload.keys()) == {
+        "current_period",
+        "previous_period",
+        "delta_abs",
+        "delta_pct",
+    }
