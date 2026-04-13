@@ -209,8 +209,10 @@ def build_top_categories(
 
 
 def calculate_net_value(movements: list[FinancialMovement]) -> float:
-    income = sum(item.amount for item in movements if item.operation_type == "income")
-    outcome = sum(item.amount for item in movements if item.operation_type == "outcome")
+    income = sum(
+        item.amount for item in movements if item.operation_type == "income")
+    outcome = sum(
+        item.amount for item in movements if item.operation_type == "outcome")
     return round(income - outcome, 2)
 
 
@@ -274,7 +276,8 @@ def get_metrics_summary(
 ) -> list[MetricsSummaryItem]:
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
-        movements = [item for item in movements if item.business_type == business_type]
+        movements = [
+            item for item in movements if item.business_type == business_type]
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )
@@ -291,7 +294,8 @@ def get_top_categories(
 ) -> list[TopCategoryItem]:
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
-        movements = [item for item in movements if item.business_type == business_type]
+        movements = [
+            item for item in movements if item.business_type == business_type]
     filtered = filter_movements(
         movements, start_date, end_date, category=None, operation_type=operation_type
     )
@@ -306,7 +310,8 @@ def get_metrics_comparison(
 ) -> MetricsComparison:
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
-        movements = [item for item in movements if item.business_type == business_type]
+        movements = [
+            item for item in movements if item.business_type == business_type]
 
     current_movements = filter_movements(
         movements, start_date, end_date, category=None, operation_type=None
@@ -344,7 +349,8 @@ def get_metrics_alerts(
 ) -> list[MetricsAlert]:
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
-        movements = [item for item in movements if item.business_type == business_type]
+        movements = [
+            item for item in movements if item.business_type == business_type]
 
     filtered = filter_movements(
         movements, start_date, end_date, category=None, operation_type=None
