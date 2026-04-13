@@ -25,6 +25,14 @@ class FinancialMovement(BaseModel):
     business_type: BusinessType
 
 
+class MetricsFacets(BaseModel):
+    operation_types: list[OperationType]
+    business_types: list[BusinessType]
+    categories: list[Category]
+    min_date: date
+    max_date: date
+
+
 def _year_for_month(month: int, today: date) -> int:
     if month < today.month:
         return today.year
@@ -110,6 +118,17 @@ def ensure_chronological_order(movements: list[FinancialMovement]) -> list[Finan
     return sorted(movements, key=lambda item: item.create_date)
 
 
+def build_metrics_facets(movements: list[FinancialMovement]) -> MetricsFacets:
+    ordered = ensure_chronological_order(movements)
+    return MetricsFacets(
+        operation_types=sorted({item.operation_type for item in ordered}),
+        business_types=sorted({item.business_type for item in ordered}),
+        categories=sorted({item.category for item in ordered}),
+        min_date=ordered[0].create_date,
+        max_date=ordered[-1].create_date,
+    )
+
+
 @router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -127,6 +146,12 @@ def get_metrics(
         movements, start_date, end_date, category, operation_type
     )
     return ensure_chronological_order(filtered)
+
+
+@router.get("/api/metrics/facets", response_model=MetricsFacets)
+def get_metrics_facets() -> MetricsFacets:
+    movements = generate_mock_movements(seed=42)
+    return build_metrics_facets(movements)
 
 
 @router.get("/api/metrics/b2b", response_model=list[FinancialMovement])

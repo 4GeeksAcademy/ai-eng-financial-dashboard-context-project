@@ -99,3 +99,20 @@ def test_b2b_endpoint_combines_new_filters():
     assert all(item["business_type"] == "B2B" for item in payload)
     assert all(item["operation_type"] == "outcome" for item in payload)
     assert all(item["category"] == "suppliers" for item in payload)
+
+
+def test_metrics_facets_returns_filter_options_and_date_range():
+    response = client.get("/api/metrics/facets")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert sorted(payload["operation_types"]) == ["income", "outcome"]
+    assert payload["business_types"] == ["B2B", "B2C"]
+    assert payload["categories"] == [
+        "administrative",
+        "operational",
+        "others",
+        "sales",
+        "suppliers",
+    ]
+    assert payload["min_date"] <= payload["max_date"]
