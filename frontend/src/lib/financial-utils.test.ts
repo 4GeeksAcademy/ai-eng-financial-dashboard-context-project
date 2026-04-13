@@ -61,27 +61,44 @@ describe("computeKPIs", () => {
 });
 
 describe("computeMonthlyData", () => {
-  it("returns 12 months with aggregated income/outcome by month", () => {
-    const monthlyData = computeMonthlyData(sampleMovements);
+  it("returns chronological year-month points with aggregated totals", () => {
+    const unsortedCrossYearMovements: FinancialMovement[] = [
+      {
+        create_date: "2026-01-08",
+        amount: 300,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2C",
+      },
+      {
+        create_date: "2025-12-05",
+        amount: 200,
+        operation_type: "outcome",
+        category: "operational",
+        business_type: "B2B",
+      },
+      {
+        create_date: "2025-12-03",
+        amount: 1000,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+    ];
+    const monthlyData = computeMonthlyData(unsortedCrossYearMovements);
 
-    expect(monthlyData).toHaveLength(12);
+    expect(monthlyData).toHaveLength(2);
     expect(monthlyData[0]).toEqual({
-      month: "Jan",
+      month: "Dec 2025",
       income: 1000,
-      outcome: 250,
-      profitPercent: 75,
+      outcome: 200,
+      profitPercent: 80,
     });
     expect(monthlyData[1]).toEqual({
-      month: "Feb",
-      income: 500,
+      month: "Jan 2026",
+      income: 300,
       outcome: 0,
       profitPercent: 100,
-    });
-    expect(monthlyData[2]).toEqual({
-      month: "Mar",
-      income: 0,
-      outcome: 0,
-      profitPercent: 0,
     });
   });
 });
