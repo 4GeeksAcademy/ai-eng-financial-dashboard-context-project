@@ -33,7 +33,7 @@ _Dashboard de métricas financieras con frontend en React + TypeScript y backend
    └─ <nombre-regla>.md
 └─ /skills
    └─ /<nombre-skill>
-      └─ /README.md
+      └─ /SKILL.md
 ```
 
 ## Cómo ejecutar en local

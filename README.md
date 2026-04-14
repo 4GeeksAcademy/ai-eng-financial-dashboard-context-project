@@ -33,7 +33,7 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
    └─ <rule-name>.md
 └─ /skills
    └─ /<skill-name>
-      └─ /README.md
+      └─ /SKILL.md
 ```
 
 ## How to run locally
