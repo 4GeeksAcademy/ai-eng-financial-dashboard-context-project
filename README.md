@@ -20,7 +20,7 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
 ## Recommended steps
 
 1. Fork this repository to your account.
-2. Clone your fork and open the project in your editor.
+2. Open your fork in GitHub Codespaces or clone it and run it in your local environment.
 3. Run your AI agent to inspect both frontend and backend.
 4. Document the proposed rules and memory bank in your fork.
 5. Refine and validate the rules until they fit the project's real workflow.
@@ -41,6 +41,9 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
 ```bash
 docker compose up --build
 ```
+
+The frontend uses the Vite proxy for `/api` by default, so no extra environment variables are required in local development or Codespaces.
+If you need to target a different backend origin, copy `frontend/.env.example` to `.env` and set `VITE_API_BASE_URL`.
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000

@@ -20,7 +20,7 @@ _Dashboard de métricas financieras con frontend en React + TypeScript y backend
 ## Pasos recomendados
 
 1. Haz un fork de este repositorio a tu cuenta.
-2. Clona tu fork y abre el proyecto en tu editor.
+2. Abre tu fork en GitHub Codespaces o clónalo y ejecútalo en tu entorno local.
 3. Ejecuta tu agente de IA para inspeccionar frontend y backend.
 4. Documenta las reglas propuestas y el banco de memoria en tu fork.
 5. Ajusta y valida las reglas hasta que sean aplicables al flujo real del proyecto.
@@ -41,6 +41,9 @@ _Dashboard de métricas financieras con frontend en React + TypeScript y backend
 ```bash
 docker compose up --build
 ```
+
+El frontend usa por defecto el proxy de Vite para `/api`, así que no necesitas variables de entorno extra ni en desarrollo local ni en Codespaces.
+Si necesitas apuntar a otro backend, copia `frontend/.env.example` como `.env` y define `VITE_API_BASE_URL`.
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000
