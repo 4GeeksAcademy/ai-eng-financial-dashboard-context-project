@@ -8,8 +8,11 @@ export function DashboardHeader({ period = '2024 — Full Year' }: DashboardHead
   return (
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <LayoutDashboard size={18} />
+        <span
+          aria-hidden="true"
+          className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary"
+        >
+          <LayoutDashboard size={18} aria-hidden="true" focusable="false" />
         </span>
         <div>
           <h1 className="text-xl font-semibold text-foreground tracking-tight">Financial Overview</h1>
