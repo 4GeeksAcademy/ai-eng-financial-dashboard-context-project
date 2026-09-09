@@ -1,0 +1,31 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Coverage output
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# VCS
+.git
+.gitignore
+
+# Local env files
+.env
+.env.*
+
+# Logs
+*.log
+
+# Editor / OS cruft
+.DS_Store
+
+# Docker files (not needed inside the image)
+Dockerfile
+.dockerignore

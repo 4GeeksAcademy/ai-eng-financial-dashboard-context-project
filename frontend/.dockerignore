@@ -1,0 +1,28 @@
+# Dependencies (reinstalled inside the image)
+node_modules
+
+# Build output
+dist
+
+# Test / tooling output
+coverage
+
+# VCS
+.git
+.gitignore
+
+# Local env files (keep the committed example)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / OS cruft
+.DS_Store
+
+# Docker files (not needed inside the image)
+Dockerfile
+.dockerignore
