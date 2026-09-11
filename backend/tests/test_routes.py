@@ -154,6 +154,15 @@ def test_top_categories_returns_limited_sorted_categories():
     assert all(item["operation_type"] == "outcome" for item in payload)
 
 
+def test_top_categories_rejects_limit_below_minimum():
+    response = client.get(
+        "/api/metrics/categories/top",
+        params={"limit": 0},
+    )
+
+    assert response.status_code == 422
+
+
 def test_metrics_comparison_returns_delta_fields():
     response = client.get(
         "/api/metrics/comparison",

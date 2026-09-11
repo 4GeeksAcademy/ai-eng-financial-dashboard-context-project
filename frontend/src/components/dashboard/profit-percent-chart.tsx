@@ -37,6 +37,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
       <p className="font-semibold text-foreground mb-1">{label}</p>
       <div className="flex items-center gap-2">
         <span
+          aria-hidden="true"
           className="inline-block h-2 w-2 rounded-full"
           style={{ backgroundColor: 'var(--chart-profit)' }}
         />
@@ -67,8 +68,12 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
   return (
     <Card className="border-border/60">
       <CardHeader className="pb-4">
-        <CardTitle className="text-base font-semibold">Profit Margin %</CardTitle>
-        <CardDescription>Monthly profit as a percentage of total income</CardDescription>
+        <CardTitle id="profit-percent-chart-title" className="text-base font-semibold">
+          Profit Margin %
+        </CardTitle>
+        <CardDescription id="profit-percent-chart-description">
+          Monthly profit as a percentage of total income
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {!hasData ? (
@@ -76,36 +81,51 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `${v.toFixed(0)}%`}
-                width={40}
-                domain={['auto', 'auto']}
-              />
-              <ReferenceLine y={0} stroke="var(--color-border)" strokeDasharray="4 4" />
-              <Tooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="profitPercent"
-                name="profitPercent"
-                stroke="var(--chart-profit)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--chart-profit)', strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div
+            role="group"
+            aria-labelledby="profit-percent-chart-title"
+            aria-describedby="profit-percent-chart-description profit-percent-chart-summary"
+          >
+            <p id="profit-percent-chart-summary" className="sr-only">
+              Monthly values: {data.map(({ month, profitPercent }) => (
+                `${month}: profit margin ${profitPercent.toFixed(1)}%. `
+              ))}
+            </p>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart
+                accessibilityLayer
+                data={data}
+                margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${v.toFixed(0)}%`}
+                  width={40}
+                  domain={['auto', 'auto']}
+                />
+                <ReferenceLine y={0} stroke="var(--color-border)" strokeDasharray="4 4" />
+                <Tooltip content={<CustomTooltip />} />
+                <Line
+                  type="monotone"
+                  dataKey="profitPercent"
+                  name="profitPercent"
+                  stroke="var(--chart-profit)"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: 'var(--chart-profit)', strokeWidth: 0 }}
+                  activeDot={{ r: 5, strokeWidth: 0 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>
