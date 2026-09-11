@@ -19,7 +19,7 @@ El README documenta `docker compose up --build` y las URLs `http://localhost:517
 
 ## Comunicación
 
-`App.tsx` calcula `API_BASE_URL` desde `import.meta.env.VITE_API_BASE_URL` o usa una cadena vacía, y solicita `${API_BASE_URL}/api/metrics`. Evidencia: [frontend/src/App.tsx](../frontend/src/App.tsx).
+ `App.tsx` calcula `API_BASE_URL` desde `import.meta.env.VITE_API_BASE_URL` o usa una cadena vacía, y solicita `${API_BASE_URL}/api/metrics` con `AbortController`. La petición recibe la señal del controlador y el cleanup del efecto la cancela al desmontar; los aborts no se muestran como errores normales ni actualizan el estado después del desmontaje. Evidencia: [frontend/src/App.tsx](../frontend/src/App.tsx).
 
 Vite redirige las rutas `/api` a `http://backend:8000`; `backend` coincide con el nombre del servicio de Compose. Evidencia: [frontend/vite.config.ts](../frontend/vite.config.ts) y [docker-compose.yml](../docker-compose.yml).
 
@@ -42,8 +42,13 @@ Los tests de [backend/tests/test_routes.py](../backend/tests/test_routes.py) cub
 
 ## Datos y estado conocido
 
-El backend genera 30 movimientos por cada uno de 12 meses mediante `generate_mock_movements`; los endpoints lo invocan con `seed=42`. Las fechas se calculan usando `date.today()` y `_year_for_month()`, por lo que el texto fijo `2024 - Full Year` de [frontend/src/App.tsx](../frontend/src/App.tsx) no prueba que los datos reales sean de 2024. Evidencia: [backend/app/routes.py](../backend/app/routes.py).
+ El backend genera 30 movimientos por cada uno de 12 meses mediante `generate_mock_movements`; los endpoints lo invocan con `seed=42`. Las fechas se calculan usando `date.today()` y `_year_for_month()`, por lo que el conjunto puede abarcar dos años. `App.tsx` deriva el período mostrado a partir de las fechas mínima y máxima recibidas en `/api/metrics`; mientras no haya datos usa el texto neutral `Period unavailable`. Evidencia: [backend/app/routes.py](../backend/app/routes.py) y [frontend/src/App.tsx](../frontend/src/App.tsx).
 
+## Accesibilidad implementada
+
+La notificación de error en `App.tsx` usa `role="alert"`, `aria-live="assertive"` y `aria-atomic="true"`. El dashboard conserva un único `h1`, añade headings `h2` para las secciones de KPIs y gráficos, y usa `h3` para los KPI y títulos de gráficos; las secciones se asocian mediante `aria-labelledby`. El icono de cada KPI es decorativo y usa `aria-hidden="true"`. Evidencia: [frontend/src/App.tsx](../frontend/src/App.tsx), [frontend/src/components/dashboard/kpi-card.tsx](../frontend/src/components/dashboard/kpi-card.tsx) y [frontend/src/components/ui/card.tsx](../frontend/src/components/ui/card.tsx).
+
+Los gráficos usan `accessibilityLayer`, relacionan cada título y descripción mediante `aria-labelledby` y `aria-describedby`, y exponen un resumen textual mensual derivado de sus datos. `IncomeOutcomeChart` diferencia `income` y `outcome` mediante color y patrón de línea; los indicadores circulares de los tooltips están marcados como decorativos con `aria-hidden="true"`. Evidencia: [frontend/src/components/dashboard/income-outcome-chart.tsx](../frontend/src/components/dashboard/income-outcome-chart.tsx) y [frontend/src/components/dashboard/profit-percent-chart.tsx](../frontend/src/components/dashboard/profit-percent-chart.tsx).
 Existe un dataset fijo adicional en [frontend/src/lib/mock-data.ts](../frontend/src/lib/mock-data.ts), pero no aparece importado por [frontend/src/App.tsx](../frontend/src/App.tsx). La fuente actualmente usada por el dashboard es la API.
 
 No hay persistencia declarada en Compose ni una dependencia de base de datos en [backend/requirements.txt](../backend/requirements.txt). Esto permite decir que no se observa persistencia configurada en el repositorio revisado, pero no permite descartar infraestructura externa no declarada.
