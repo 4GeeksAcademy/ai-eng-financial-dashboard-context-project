@@ -1,0 +1,91 @@
+# Reconocimiento del repositorio
+
+## Alcance
+- Stack: FastAPI (backend) + React/TypeScript con Vite y Tailwind (frontend).
+- Flujo de datos: el frontend consume `/api/metrics` y deriva KPIs y series mensuales en cliente.
+
+## Estructura de codigo por archivo
+
+backend/app/main.py/main.py;
+- Bootstrap de FastAPI y CORS.- (lineas 1-14) Crea la app, configura middleware CORS abierto y monta el router principal importado desde `app.routes`.
+
+backend/app/routes.py/routes.py;
+- Tipos de dominio y contratos API.- (lineas 11-63) Declara tipos `Literal` (operacion, categoria, negocio, agrupacion) y modelos `BaseModel` para movimientos, facets, resumen, top categorias, comparativa y alertas.
+- Generacion de datos mock anuales.- (lineas 65-104) Implementa `_year_for_month`, `_build_movement` y `generate_mock_movements` para sintetizar 360 movimientos ordenados cronologicamente con semilla opcional.
+- Capa de filtrado y orden.- (lineas 107-158) Aplica filtros por fecha/categoria/operacion y utilidades de orden/facets para mantener consistencia de salida.
+- Agregaciones analiticas.- (lineas 161-240) Resume por dia/semana/mes, calcula top categorias por monto, neto total y deteccion de alertas por incremento relativo sobre baseline historico.
+- Endpoints base y consultas principales.- (lineas 243-359) Expone `/health`, `/api/metrics`, `/api/metrics/facets`, `/api/metrics/summary`, `/api/metrics/categories/top`, `/api/metrics/comparison` y `/api/metrics/alerts`.
+- Segmentacion B2B/B2C.- (lineas 362-391) Expone `/api/metrics/b2b` y `/api/metrics/b2c`, filtrando por tipo de negocio y reutilizando la logica general de filtros.
+
+backend/tests/conftest.py/conftest.py;
+- Setup de path para tests.- (lineas 1-7) Inserta la raiz del backend en `sys.path` para que `pytest` pueda importar `app.*` sin errores de modulo.
+
+backend/tests/test_routes.py/test_routes.py;
+- Smoke tests y utilidades de datos.- (lineas 12-27) Verifica cantidad, orden cronologico y filtro por rango cerrado en funciones de generacion/filtrado.
+- Contratos de endpoints base.- (lineas 29-101) Valida `health`, filtros de `/api/metrics`, y que endpoints B2B/B2C devuelvan solo su segmento.
+- Endpoints analiticos avanzados.- (lineas 104-189) Cubre facets, summary, top categorias, comparacion de periodos y estructura de alertas.
+
+frontend/src/main.tsx/main.tsx;
+- Punto de entrada React.- (lineas 1-10) Monta `App` en `#root` usando `StrictMode` e importa estilos globales.
+
+frontend/src/App.tsx/App.tsx;
+- Carga de datos desde API.- (lineas 13-21) Define `API_BASE_URL` y `fetchFinancialData` con manejo de estado HTTP.
+- Orquestacion de estado de dashboard.- (lineas 23-43) Gestiona `metrics`, `monthlyData`, `loading` y `error`; al montar transforma movimientos en KPIs y serie mensual.
+- Composicion del layout principal.- (lineas 45-74) Renderiza header, mensaje de error condicional, fila KPI y dos graficas.
+
+frontend/src/index.css/index.css;
+- Tokens de tema y paleta.- (lineas 5-76) Define variables CSS para colores semanticos, charts, badges y radios en modo claro/oscuro.
+- Mapeo a `@theme` y base layer.- (lineas 78-118) Vincula tokens a aliases de Tailwind y aplica estilos base globales.
+- Altura minima de contenedor app.- (lineas 121-125) Asegura `min-height: 100%` en `html`, `body` y `#root`.
+
+frontend/src/lib/financial-types.ts/financial-types.ts;
+- Tipos compartidos frontend.- (lineas 1-25) Modela estructuras de movimiento financiero, KPIs y puntos de serie mensual para tipado consistente en componentes y utilidades.
+
+frontend/src/lib/financial-utils.ts/financial-utils.ts;
+- Normalizacion temporal.- (lineas 7-19) Convierte fechas a clave `YYYY-MM` y etiqueta legible `Mon YYYY`.
+- Calculo de KPIs.- (lineas 21-34) Agrega ingresos/egresos, utilidad neta y margen porcentual.
+- Agregacion mensual para charts.- (lineas 36-67) Acumula por mes, ordena cronologicamente y genera puntos listos para Recharts.
+- Formateadores de presentacion.- (lineas 69-80) Formatea moneda USD y porcentajes para UI.
+
+frontend/src/lib/financial-utils.test.ts/financial-utils.test.ts;
+- Pruebas de KPIs.- (lineas 35-61) Verifica calculos de totales y caso borde sin ingresos.
+- Pruebas de agregacion mensual.- (lineas 63-104) Garantiza orden cronologico cross-year y exactitud de acumulados.
+- Pruebas de formato.- (lineas 106-114) Valida formato de moneda y porcentaje.
+
+frontend/src/lib/mock-data.ts/mock-data.ts;
+- Dataset sintetico por mes.- (lineas 3-73) Define movimientos manuales enero-diciembre para pruebas/manual demo en cliente.
+
+frontend/src/lib/utils.ts/utils.ts;
+- Helper `cn` para clases.- (lineas 1-6) Combina `clsx` y `tailwind-merge` para composicion segura de clases CSS.
+
+frontend/src/components/dashboard/dashboard-header.tsx/dashboard-header.tsx;
+- Encabezado del dashboard.- (lineas 1-26) Muestra icono, titulo/subtitulo y badge de periodo con prop opcional.
+
+frontend/src/components/dashboard/kpi-card.tsx/kpi-card.tsx;
+- Variantes visuales por metrica.- (lineas 15-32) Configura estilos de badge/icono para income, outcome, profit y margin.
+- Estado de carga con skeleton.- (lineas 37-50) Renderiza placeholder para UX mientras carga informacion.
+- Tarjeta KPI final.- (lineas 52-68) Renderiza etiqueta, valor formateado e icono por variante.
+
+frontend/src/components/dashboard/kpi-row.tsx/kpi-row.tsx;
+- Composicion de 4 KPIs.- (lineas 11-48) Instancia cuatro `KPICard` con metricas y helpers de formato.
+
+frontend/src/components/dashboard/income-outcome-chart.tsx/income-outcome-chart.tsx;
+- Tooltip custom monetario.- (lineas 21-47) Renderiza tooltip enriquecido con color de serie y monto formateado.
+- Skeleton y empty state.- (lineas 50-77) Maneja estado de carga y ausencia de datos.
+- LineChart de ingresos vs egresos.- (lineas 78-120) Configura ejes, grilla, leyenda y dos series `income/outcome` con estilos de tema.
+
+frontend/src/components/dashboard/profit-percent-chart.tsx/profit-percent-chart.tsx;
+- Tooltip custom de margen.- (lineas 20-48) Muestra valor de margen con precision decimal y marca visual.
+- Skeleton y empty state.- (lineas 51-78) Mantiene consistencia UX frente a carga o datos nulos.
+- LineChart de margen porcentual.- (lineas 79-109) Dibuja serie `profitPercent`, agrega `ReferenceLine` en 0 y formatea eje Y en porcentaje.
+
+frontend/src/components/ui/card.tsx/card.tsx;
+- Primitivas de tarjeta reutilizable.- (lineas 5-92) Expone `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter` con slots y clases utilitarias.
+
+frontend/src/components/ui/skeleton.tsx/skeleton.tsx;
+- Placeholder reutilizable.- (lineas 3-13) Define componente `Skeleton` con `animate-pulse` y composicion de clases via `cn`.
+
+## Resumen de implementacion
+- El backend sintetiza y filtra datos financieros con semilla fija para respuestas deterministas en demos/tests.
+- El frontend no calcula en servidor: consume movimientos crudos y deriva KPIs/series localmente para renderizar tarjetas y charts.
+- Las pruebas cubren contratos funcionales clave en ambos lados (API + utilidades de negocio en cliente).
