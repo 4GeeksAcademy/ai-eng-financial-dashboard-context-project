@@ -45,3 +45,5 @@ backend/venv/
 
 # Docker
 *.tar
+
+todo.md
