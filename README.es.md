@@ -42,8 +42,51 @@ _Dashboard de métricas financieras con frontend en React + TypeScript y backend
 docker compose up --build
 ```
 
-El frontend usa por defecto el proxy de Vite para `/api`, así que no necesitas variables de entorno extra ni en desarrollo local ni en Codespaces.
-Si necesitas apuntar a otro backend, copia `frontend/.env.example` como `.env` y define `VITE_API_BASE_URL`.
+El frontend siempre llama a la API mediante la URL relativa `/api/metrics`. Vite
+redirige esa ruta usando `VITE_API_PROXY_TARGET`. Docker Compose define esta
+variable como `http://host.docker.internal:8000` y asigna `host.docker.internal`
+al host de Docker, algo necesario al ejecutar el contenedor frontend en GitHub
+Codespaces. Vite escucha en `0.0.0.0:5173` y FastAPI en `0.0.0.0:8000`.
+
+Después verifica los servicios y la API a través del proxy desde el host del
+workspace:
+
+```bash
+docker compose config
+docker compose ps
+curl -I http://localhost:8000/docs
+curl http://localhost:8000/api/metrics
+curl -I http://localhost:5173
+```
+
+En otro entorno puedes sobrescribir `VITE_API_PROXY_TARGET` al iniciar el
+servicio frontend. Mantén la petición de la aplicación relativa para que siga
+funcionando mediante el proxy de Vite:
+
+```bash
+VITE_API_PROXY_TARGET=http://host.docker.internal:8000 docker compose up --build
+```
+
+Si TypeScript muestra el error `Cannot find type definition file for
+'vite/client'`, instala las dependencias del frontend para que el paquete
+`vite` esté disponible localmente:
+
+```bash
+cd frontend
+npm install
+npm ls vite
+```
+
+Si utilizas Docker, puedes comprobarlo dentro del contenedor:
+
+```bash
+docker compose build --no-cache frontend
+docker compose up -d frontend
+docker compose exec frontend npm ls vite
+```
+
+La entrada `"vite/client"` de `frontend/tsconfig.app.json` debe mantenerse,
+porque proporciona los tipos de Vite para `import.meta.env`.
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000
