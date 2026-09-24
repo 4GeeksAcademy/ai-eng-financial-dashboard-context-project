@@ -12,6 +12,22 @@ import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
+function formatDataPeriod(movements: FinancialMovement[]): string {
+  if (movements.length === 0) {
+    return "No data";
+  }
+
+  const years = movements.map((movement) =>
+    Number(movement.create_date.slice(0, 4)),
+  );
+  const firstYear = Math.min(...years);
+  const lastYear = Math.max(...years);
+
+  return firstYear === lastYear
+    ? `${firstYear}`
+    : `${firstYear} - ${lastYear}`;
+}
+
 async function fetchFinancialData(): Promise<FinancialMovement[]> {
   const response = await fetch(`${API_BASE_URL}/api/metrics`);
   if (!response.ok) {
@@ -23,12 +39,14 @@ async function fetchFinancialData(): Promise<FinancialMovement[]> {
 function App() {
   const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
   const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
+  const [period, setPeriod] = useState("Loading...");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFinancialData()
       .then((movements) => {
+        setPeriod(formatDataPeriod(movements));
         setMetrics(computeKPIs(movements));
         setMonthlyData(computeMonthlyData(movements));
       })
@@ -46,7 +64,7 @@ function App() {
     <main className="dark min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
-          <DashboardHeader period="2024 - Full Year" />
+          <DashboardHeader period={period} />
 
           {error ? (
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
