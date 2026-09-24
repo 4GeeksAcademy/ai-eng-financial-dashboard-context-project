@@ -14,7 +14,9 @@ This audit applies the repository rules in `.agents/rules/`, the installed `acce
 - `deploy-to-vercel` is relevant only if a Vercel deployment becomes an actual project goal. No Vercel configuration or deployment evidence exists in this repository.
 - `npx skills find accessibility`, `performance`, `seo`, and `forms` were executed. The most relevant additional candidates were `web-design-guidelines`, `web-quality-audit`, `performance`, `playwright-best-practices`, and `seo`; none was installed because the current scope is the requested accessibility and React review.
 - Both requested skills were installed with `npx skills add ... --skill ... --copy`. The CLI reported safe/low-risk results and zero Socket alerts for both packages.
+- The additional `web-design-guidelines` skill was installed with `npx skills add vercel-labs/agent-skills --skill web-design-guidelines --copy`. It was selected because this dashboard still benefits from a focused UI/accessibility/UX review in addition to the general accessibility and React-performance skills.
 - The installer generated project skill metadata in `skills-lock.json` and agent-specific copies/symlinks under `.claude/` and `.agents/skills/`; these generated artifacts should be reviewed before committing.
+- The project-specific reusable skill is also available at `.skills/financial-dashboard-quality/SKILL.md`, with objective, inputs, outputs, procedure, and repository-specific acceptance criteria.
 
 ## Applied changes
 
