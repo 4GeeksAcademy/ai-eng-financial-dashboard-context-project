@@ -63,6 +63,7 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
   }
 
   const hasData = data.some((d) => d.profitPercent !== 0)
+  const chartTitle = 'Profit Margin %'
 
   return (
     <Card className="border-border/60">
@@ -76,7 +77,16 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
+          <>
+            <p id="profit-margin-summary" className="sr-only">
+              Monthly profit margin values are also available in the table below the chart.
+            </p>
+            <div
+              role="img"
+              aria-label={`${chartTitle}: monthly profit as a percentage of total income`}
+              aria-describedby="profit-margin-summary"
+            >
+              <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
@@ -105,7 +115,33 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
             </LineChart>
-          </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
+            <details className="mt-4 text-sm">
+              <summary className="cursor-pointer font-medium text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                View data table
+              </summary>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left">
+                  <caption className="sr-only">Monthly profit margin values</caption>
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th scope="col" className="px-2 py-2">Month</th>
+                      <th scope="col" className="px-2 py-2">Profit margin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((point) => (
+                      <tr key={point.month} className="border-b border-border/60">
+                        <th scope="row" className="px-2 py-2 font-normal">{point.month}</th>
+                        <td className="px-2 py-2">{point.profitPercent.toFixed(1)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </>
         )}
       </CardContent>
     </Card>
