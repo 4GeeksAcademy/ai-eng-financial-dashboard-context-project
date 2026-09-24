@@ -34,19 +34,21 @@ Las rutas soportan, según corresponda, filtros por fecha, categoría, tipo de o
 
 ## Estado de validación
 
-No hay resultados registrados en este memory-bank para `npm run lint`, `npm run build`, `npm test`, `pytest` ni `docker compose up --build`; por tanto, su estado documentado es **no verificado**. Los comandos están disponibles según la configuración del repositorio y se pueden validar así:
+La validación registrada en esta revisión distingue host y Compose:
 
 - Desde `frontend/`, con dependencias npm instaladas: `npm run lint`, `npm run build`, `npm test`.
-- Desde `backend/`, con las dependencias de `backend/requirements.txt` instaladas: `pytest`.
-- Desde la raíz, con Docker Engine disponible: `docker compose up --build`.
+- En el host, desde `backend/`, `pytest` no estuvo disponible (`CommandNotFoundException`).
+- Desde la raíz, con Docker Engine disponible, `docker compose up --build` construyó las imágenes y arrancó frontend y backend; se detuvo después de confirmar ambos servicios activos.
+- Desde la raíz, `docker compose run --rm backend pytest` ejecutó 15 pruebas: **15 passed**, con 1 warning de deprecación de Starlette/httpx.
+- Con Compose activo, un smoke test HTTP devolvió `200` para `http://localhost:8000/health`, `200` y 360 registros para `http://localhost:8000/api/metrics`, y `200` para `http://localhost:5173/`.
 
-El estado de ejecución debe actualizarse con comando, directorio y resultado cuando se realice una validación.
+El estado de ejecución debe actualizarse con comando, directorio, contexto host/Compose y resultado cuando se realice una validación. El frontend quedó validado con `npm run lint`, `npm run build` y `npm test`: lint correcto, build correcto y 5 tests pasaron; el build emitió solo el warning de chunk mayor a 500 kB.
 
 ## Decisiones y pendientes de stewardship
 
 - **Decisión mantenida:** el dashboard calcula KPI y agregados mensuales en frontend; cualquier cambio de contrato debe revisar `frontend/src/lib/financial-utils.ts` y sus pruebas.
 - **Decisión mantenida:** el backend sigue siendo mock e in-memory; no introducir persistencia implícita bajo una tarea de UI.
-- **Pendiente de validación:** ejecutar las pruebas backend y una validación de Compose en un entorno con Docker Engine disponible.
+- **Pendiente de validación:** no hay una validación E2E registrada que compruebe navegador → proxy → API; la validación actual cubre build, tests unitarios/backend y arranque de Compose.
 - **Configuración existente:** `frontend/.env.example` documenta `VITE_API_BASE_URL` como override opcional; no debe tratarse como requisito del flujo Compose.
 
 ## No evidenciado actualmente

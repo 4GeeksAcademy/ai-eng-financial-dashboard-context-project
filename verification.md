@@ -29,7 +29,16 @@ Esta nota deja el rastro corto de verificación solicitado para el handover. Las
 | Reglas con alcance y guía específica | ✅ | Cada regla contiene encabezado, `Regla propuesta`, `Evidencia del repositorio` y `Aplicación`. |
 | Reglas refinadas mediante tarea real | ✅ | `06-validation-context.md` fue añadido después de las pruebas con Explore para exigir directorio, dependencias, host/Compose y resultado de ejecución. |
 | Commit dedicado de fase | ✅ | `aca6688 docs: clarify validation context for agents` contiene la sexta regla de refinamiento. |
-| Validación ejecutada de frontend/backend/Compose | ❓ | El repositorio contiene scripts y pruebas, pero este documento no registra resultados ejecutados de `npm`, `pytest` o `docker compose`. No se debe presentar su estado como exitoso. |
+| Validación ejecutada de frontend/backend/Compose | ✅ | En `frontend/`: `npm run lint` correcto, `npm run build` correcto y `npm test` con 5 tests pasados. En la raíz: `docker compose up --build` construyó y arrancó frontend/backend. En la raíz: `docker compose run --rm backend pytest` ejecutó 15 tests pasados, con 1 warning deprecado. Smoke test HTTP: `/health` 200, `/api/metrics` 200 con 360 registros y frontend `/` 200. `pytest` directo en `backend/` no estuvo disponible en el host. |
+
+### Tarea real de validación de reglas
+
+Se pidió al agent Explore una auditoría read-only del repositorio contra los criterios de evaluación. La tarea exigía revisar `AGENTS.md`, `.agents/rules`, `memory-bank`, `verification.md`, el historial Git y el código fuente, y clasificar cada criterio como correcto, incorrecto o no verificable.
+
+- **Reglas aplicadas:** `01-evidence-first.md` obligó a respaldar cada conclusión con rutas concretas; `05-validation-and-commits.md` separó la evidencia documental de los resultados ejecutados; `06-validation-context.md` exigió distinguir host de Compose y registrar contexto de ejecución.
+- **Hallazgo producido:** el agent detectó que la documentación decía que faltaban resultados de ejecución y que la validación de reglas no tenía una tarea reproducible suficientemente descrita.
+- **Cambio resultante:** se ejecutaron las validaciones frontend y Compose/backend, y esta sección se añadió para dejar tarea, regla aplicada, evidencia, resultado y límites. El resultado fue una actualización de `memory-bank/current-state.md` y de esta matriz.
+- **Límite conservado:** no se inventó una validación E2E ni se afirmó que `pytest` funcionara directamente en el host; ese comando falló por dependencia no disponible y backend se validó dentro de Compose.
 
 ## Fase 4 — Memoria del proyecto
 
@@ -38,7 +47,7 @@ Esta nota deja el rastro corto de verificación solicitado para el handover. Las
 | `memory-bank` en la raíz | ✅ | Existe `memory-bank/` con `README.md`, `product.md`, `tech-stack.md` y `current-state.md`. |
 | Overview de producto con evidencia | ✅ | `product.md` identifica el dashboard, su flujo y el límite mock con rutas de evidencia. |
 | Stack tecnológico documentado | ✅ | `tech-stack.md` cubre frontend, backend, dependencias clave, Compose, Dockerfiles, proxy y variables de entorno. |
-| Estado actual, gaps y prioridades | ✅ | `current-state.md` cubre endpoints, comportamiento frontend, tests presentes, validación no verificada, gaps y pendientes de stewardship. |
+| Estado actual, gaps y prioridades | ✅ | `current-state.md` cubre endpoints, comportamiento frontend, tests presentes, resultados de validación host/Compose, gaps y pendientes de stewardship. |
 | Claims sin soporte rechazados | ✅ | Los documentos distinguen hechos de código, comandos disponibles, resultados no registrados y ausencias de evidencia. |
 | Commit dedicado de fase | ✅ | `8a9143b docs: add verified project memory bank` contiene los cuatro documentos iniciales del memory-bank. |
 
@@ -46,7 +55,7 @@ Esta nota deja el rastro corto de verificación solicitado para el handover. Las
 
 - Fases 1, 2, 3 y 4 tienen commits dedicados y artefactos identificables.
 - La entrega cumple el requisito de separación de fases; no hay un único mega-commit para las cuatro fases.
-- La única marca `❓` corresponde a resultados de ejecución no registrados, no a una afirmación de que las pruebas hayan fallado.
+- La validación de ejecución está ✅ para frontend y Compose; queda como gap explícito la ausencia de una prueba E2E navegador → proxy → API y la imposibilidad de ejecutar `pytest` directamente en el host sin instalar dependencias.
 - `origin/main` estaba en `954f812` al momento de la auditoría; los commits de trabajo están en la rama local `main` y aún deben publicarse mediante `git push` si la entrega remota lo requiere.
 
 ## Evidencia principal
