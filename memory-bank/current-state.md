@@ -34,13 +34,20 @@ Las rutas soportan, según corresponda, filtros por fecha, categoría, tipo de o
 
 ## Estado de validación
 
-Los comandos disponibles están declarados, pero este memory-bank no afirma que hayan pasado en cada entorno. Para validarlos:
+No hay resultados registrados en este memory-bank para `npm run lint`, `npm run build`, `npm test`, `pytest` ni `docker compose up --build`; por tanto, su estado documentado es **no verificado**. Los comandos están disponibles según la configuración del repositorio y se pueden validar así:
 
-- Desde `frontend/`: `npm run lint`, `npm run build`, `npm test`.
-- Desde `backend/`: `pytest`.
-- Desde la raíz: `docker compose up --build`.
+- Desde `frontend/`, con dependencias npm instaladas: `npm run lint`, `npm run build`, `npm test`.
+- Desde `backend/`, con las dependencias de `backend/requirements.txt` instaladas: `pytest`.
+- Desde la raíz, con Docker Engine disponible: `docker compose up --build`.
 
 El estado de ejecución debe actualizarse con comando, directorio y resultado cuando se realice una validación.
+
+## Decisiones y pendientes de stewardship
+
+- **Decisión mantenida:** el dashboard calcula KPI y agregados mensuales en frontend; cualquier cambio de contrato debe revisar `frontend/src/lib/financial-utils.ts` y sus pruebas.
+- **Decisión mantenida:** el backend sigue siendo mock e in-memory; no introducir persistencia implícita bajo una tarea de UI.
+- **Pendiente de validación:** ejecutar las pruebas backend y una validación de Compose en un entorno con Docker Engine disponible.
+- **Configuración existente:** `frontend/.env.example` documenta `VITE_API_BASE_URL` como override opcional; no debe tratarse como requisito del flujo Compose.
 
 ## No evidenciado actualmente
 

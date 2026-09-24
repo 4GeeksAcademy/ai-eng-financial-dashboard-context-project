@@ -20,6 +20,18 @@ Las pruebas verifican que la generación produce 360 movimientos ordenados. No h
 
 Por tanto, el producto actual debe describirse como un dashboard conectado a una API de datos mock, no como un sistema financiero persistente.
 
+## Stewardship y decisiones recientes
+
+- Se eliminó la dependencia de un período fijo: `frontend/src/App.tsx` deriva el período desde los datos de la API y el encabezado usa `Selected period` como valor predeterminado (`06b55d1`).
+- Se mantuvo explícito el límite de datos mock para no sobreinterpretar el dashboard como producto conectado a datos financieros reales.
+- Las reglas de `.agents/rules/` y este memory-bank convierten esas decisiones en contexto reutilizable para futuras tareas del agent.
+
+## Riesgos de cambio
+
+- Cambiar el contrato de `/api/metrics` puede romper los cálculos client-side de KPI y datos mensuales.
+- Cambiar el hostname del proxy debe evaluarse por separado para Compose y para ejecución directa en el host.
+- Añadir persistencia o ingestión real requeriría actualizar esta descripción y las reglas de límites de mock data.
+
 ## Fuentes de evidencia
 
 - `frontend/src/App.tsx`

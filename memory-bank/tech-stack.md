@@ -36,7 +36,7 @@ No hay una base de datos, Redis, cola o almacenamiento externo declarado en Comp
 - `frontend/src/App.tsx` consume `/api/metrics`.
 - `README.md` y `README.es.md` documentan `docker compose up --build`.
 - Las URLs documentadas son `http://localhost:5173`, `http://localhost:8000` y `http://localhost:8000/docs`.
-- `App.tsx` admite la variable `VITE_API_BASE_URL`; no se encontró `frontend/.env.example` en el repositorio revisado.
+- `App.tsx` admite la variable `VITE_API_BASE_URL`; `frontend/.env.example` documenta que es opcional porque el proxy de Vite cubre el flujo local y Codespaces.
 
 ## Fuentes de evidencia
 
