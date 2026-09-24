@@ -10,7 +10,7 @@ export interface DateRangeFilter {
 
 /** Query parameters for the anomaly alerts endpoint. */
 export interface AlertsParams extends DateRangeFilter {
-  /** Alert threshold ratio; UI constrains it to `0.01` through `1.0`, default `0.3`. */
+  /** Alert threshold ratio; the current brief requests UI default `0.1`, while the API default is `0.3`. */
   threshold: number
   /** Time bucket for alerts; the dashboard table uses `month`. */
   group_by: GroupBy

@@ -33,19 +33,20 @@ interface AlertsState {
 }
 ```
 
-- `threshold` inicia en `0.3`.
+- La UI debe iniciar en `0.1` según el brief actual; la API documenta `0.3` como default si el parámetro se omite.
 - La UI valida `0.01 <= threshold <= 1.0`, con precisión de `0.01`.
 - Fechas opcionales usan `YYYY-MM-DD`; valores vacíos se omiten de la consulta.
 - `groupBy` se fija en `month` para esta tabla.
 
 ## Discrepancia que debe conservarse explícitamente
 
-El PM solicita una media móvil de los tres períodos anteriores. El contrato actual devuelve `baseline_average`, que representa el promedio histórico anterior disponible, no una ventana móvil de tres períodos.
+El brief actual solicita una media móvil de los dos períodos anteriores y una categoría registrada. El contrato actual devuelve `baseline_average`, que representa el promedio histórico anterior disponible, y no devuelve ninguna categoría de alerta.
 
 Por tanto:
 
 - ✅ `MetricsAlert` refleja fielmente la respuesta actual.
-- ❌ No debe etiquetarse `baseline_average` como media móvil de tres períodos sin cambiar/verificar el backend.
+- ❌ No debe etiquetarse `baseline_average` como media móvil de dos períodos sin cambiar/verificar el backend.
+- ❌ No debe inventarse una categoría registrada: no existe un campo de categoría en `AlertEntry`.
 - ❓ La decisión de cambiar el backend o ajustar la etiqueta sigue pendiente.
 
 ## Evidencia API
@@ -53,5 +54,6 @@ Por tanto:
 - ✅ `/api/metrics/alerts` devuelve un array con `period`, `outcome_total`, `baseline_average` e `increase_ratio`.
 - ✅ El endpoint acepta `threshold`, `group_by`, `start_date` y `end_date`.
 - ✅ `group_by=month` está permitido.
-- ✅ El default actual de `threshold` es `0.3` y el backend acepta valores `>= 0`.
+- ✅ El default actual de `threshold` en API es `0.3` y el backend acepta valores `>= 0`.
+- ❌ El default solicitado por el brief (`0.1`) no coincide con el default de API; debe tratarse como default explícito de UI.
 - ❌ El backend actual no declara el rango `0.01..1.0`; la validación frontend del PM es adicional.

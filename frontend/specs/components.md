@@ -58,7 +58,7 @@ interface AlertThresholdInputProps {
 }
 ```
 
-Valores de producto: `0.01 <= threshold <= 1.0`, `step=0.01`, default `0.3`. Etiqueta accesible: `Umbral de alerta`.
+Valores de producto: `0.01 <= threshold <= 1.0`, `step=0.01`, default de UI `0.1`. La API usa `0.3` como default cuando se omite el parámetro, por lo que la UI debe enviar explícitamente `0.1` en la carga inicial. Etiqueta accesible: `Umbral de alerta`.
 
 ### `AnomalyAlertsTable`
 
@@ -75,7 +75,7 @@ interface AnomalyAlertsTableProps {
 
 Debe colocarse bajo los gráficos, usar tabla semántica y conservarse visible en carga, error y vacío. Las columnas usan `period`, `outcome_total`, `baseline_average` e `increase_ratio * 100`.
 
-El encabezado correcto según el contrato actual es `Promedio histórico anterior`: `baseline_average` no está verificado como media móvil de tres períodos. Un array vacío muestra un mensaje explícito, por ejemplo `No se detectaron anomalías para este umbral.`
+El encabezado correcto según el contrato actual es `Promedio histórico anterior`: `baseline_average` no está verificado como media móvil de dos períodos. El brief también solicita una categoría registrada, pero `AlertEntry` no contiene ese campo; no debe inventarse. Un array vacío muestra un mensaje explícito, por ejemplo `No se detectaron anomalías para este umbral.`
 
 ## 3. Comparativa B2B vs B2C
 

@@ -70,7 +70,7 @@ Casos límite:
 
 ## Funcionalidad 2: alertas
 
-Consultar `/api/metrics/alerts` con `threshold`, `group_by=month` y el rango activo. La UI limita `threshold` a `0.01..1.0`, default `0.3`, aunque el backend actual solo declara mínimo `0`.
+Consultar `/api/metrics/alerts` con `threshold`, `group_by=month` y el rango activo. La UI limita `threshold` a `0.01..1.0` y usa default `0.1` según el brief actual. La API usa `0.3` como default cuando se omite el parámetro y solo declara mínimo `0`, por lo que la UI debe enviar explícitamente `threshold=0.1`.
 
 Mostrar `period`, `outcome_total`, `baseline_average` e `increase_ratio * 100`. El array vacío es estado válido con mensaje explícito.
 
@@ -78,7 +78,7 @@ Casos límite:
 
 1. Array vacío: conservar tabla/sección y mostrar `No se detectaron anomalías para este umbral.`
 2. Error de red/HTTP: mostrar error recuperable, no datos parciales.
-3. `baseline_average`: no llamarlo media móvil de tres períodos; el backend actual calcula promedio histórico anterior. Resolver esta discrepancia antes de afirmar cumplimiento literal del PM.
+3. El brief solicita categoría y media móvil de dos períodos, pero `AlertEntry` solo devuelve `outcome_total`, `baseline_average` e `increase_ratio`. No inventar la categoría ni llamar a `baseline_average` media móvil de dos períodos; resolver la discrepancia antes de afirmar cumplimiento literal del PM.
 
 ## Funcionalidad 3: comparativa B2B vs B2C
 
@@ -100,7 +100,8 @@ Cada funcionalidad debe distinguir `idle`, `loading`, `success`, `empty` y `erro
 
 1. Aplicar fechas automáticamente, con debounce o mediante botón `Aplicar`.
 2. Confirmar semántica de extremos y rangos parciales como requisito de producto; OpenAPI no lo expresa completamente.
-3. Resolver media móvil de tres períodos versus `baseline_average`.
+3. Resolver categoría y media móvil de dos períodos versus el contrato actual (`baseline_average`).
+4. Resolver el default de UI `0.1` frente al default API `0.3`.
 4. Confirmar si `N/D` es el copy definitivo para grupo con ingresos cero.
 5. Definir estrategia final de error parcial en comparativa.
 6. Integrar la navegación de la nueva página sin asumir una librería de routing no verificada.

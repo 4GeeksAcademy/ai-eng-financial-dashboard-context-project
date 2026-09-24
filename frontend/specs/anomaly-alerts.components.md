@@ -15,7 +15,7 @@ No debe desaparecer la sección cuando no existan anomalías.
 ## Input de umbral
 
 - Etiqueta accesible: `Umbral de alerta`.
-- Valor inicial: `0.30`.
+- Valor inicial de UI: `0.10`, según el brief actual; no omitir el parámetro esperando que la API aplique `0.3`.
 - Ratio permitido por la UI: `0.01` a `1.00`.
 - `step="0.01"`.
 - Mostrar el valor como ratio decimal; si se usa una ayuda porcentual, aclarar la conversión.
@@ -30,7 +30,8 @@ Columnas visibles solicitadas por PM:
 
 - `Período` (`period`);
 - `Outcome registrado` (`outcome_total`);
-- `Media móvil de los 3 períodos anteriores` — **pendiente de contrato**: la API actual solo ofrece `baseline_average`, que no está verificado como media móvil de tres períodos;
+- `Media móvil de los 2 períodos anteriores` — **pendiente de contrato**: la API actual solo ofrece `baseline_average`, que no está verificado como media móvil de dos períodos;
+- `Categoría registrada` — **pendiente de contrato**: la API actual no devuelve un campo de categoría en las alertas;
 - `Incremento porcentual` (`increase_ratio * 100`, formateado como porcentaje).
 
 Hasta que el backend cambie o se verifique una ventana de tres períodos, no presentar `baseline_average` con esa etiqueta. La alternativa compatible actual es `Promedio histórico anterior`.
