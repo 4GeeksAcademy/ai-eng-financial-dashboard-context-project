@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   computeKPIs,
@@ -6,6 +6,7 @@ import {
   formatCurrency,
   formatPercent,
 } from "./financial-utils";
+import { fetchFinancialData } from "./fetch-financial-data";
 import type { FinancialMovement } from "./financial-types";
 
 const sampleMovements: FinancialMovement[] = [
@@ -110,5 +111,20 @@ describe("formatters", () => {
 
   it("formats percent with one decimal", () => {
     expect(formatPercent(15.555)).toBe("15.6%");
+  });
+});
+
+describe("fetchFinancialData", () => {
+  it("retries a few times before failing when the backend is not ready yet", async () => {
+    const fetchMock = vi.fn()
+      .mockRejectedValueOnce(new Error("Connection refused"))
+      .mockResolvedValueOnce({ ok: true, json: async () => [{ create_date: "2024-01-01", amount: 10, operation_type: "income", category: "sales", business_type: "B2B" }] });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(fetchFinancialData()).resolves.toHaveLength(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    vi.unstubAllGlobals();
   });
 });

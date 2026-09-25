@@ -4,21 +4,11 @@ import { KPIRow } from "@/components/dashboard/kpi-row";
 import { IncomeOutcomeChart } from "@/components/dashboard/income-outcome-chart";
 import { ProfitPercentChart } from "@/components/dashboard/profit-percent-chart";
 import {
-  type FinancialMovement,
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "@/lib/financial-types";
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-
-async function fetchFinancialData(): Promise<FinancialMovement[]> {
-  const response = await fetch(`${API_BASE_URL}/api/metrics`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch financial data: ${response.status}`);
-  }
-  return response.json();
-}
+import { fetchFinancialData } from "@/lib/fetch-financial-data";
 
 function App() {
   const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
