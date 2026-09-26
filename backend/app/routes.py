@@ -15,6 +15,7 @@ BusinessType = Literal["B2B", "B2C"]
 GroupBy = Literal["day", "week", "month"]
 
 OUTCOME_CATEGORIES = ["suppliers", "operational", "administrative", "others"]
+ALERT_BASELINE_WINDOW = 3
 
 router = APIRouter()
 
@@ -31,6 +32,8 @@ class MetricsFacets(BaseModel):
     operation_types: list[OperationType]
     business_types: list[BusinessType]
     categories: list[Category]
+    categories_by_business_type: dict[BusinessType,
+                                      dict[OperationType, list[Category]]]
     min_date: date
     max_date: date
 
@@ -149,10 +152,23 @@ def ensure_chronological_order(movements: list[FinancialMovement]) -> list[Finan
 
 def build_metrics_facets(movements: list[FinancialMovement]) -> MetricsFacets:
     ordered = ensure_chronological_order(movements)
+    grouped: dict[BusinessType, dict[OperationType, set[Category]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
+    for item in ordered:
+        grouped[item.business_type][item.operation_type].add(item.category)
+
     return MetricsFacets(
         operation_types=sorted({item.operation_type for item in ordered}),
         business_types=sorted({item.business_type for item in ordered}),
         categories=sorted({item.category for item in ordered}),
+        categories_by_business_type={
+            business_type: {
+                operation_type: sorted(categories)
+                for operation_type, categories in sorted(by_operation.items())
+            }
+            for business_type, by_operation in sorted(grouped.items())
+        },
         min_date=ordered[0].create_date,
         max_date=ordered[-1].create_date,
     )
@@ -223,8 +239,9 @@ def detect_outcome_alerts(
     alerts: list[MetricsAlert] = []
     historical_outcomes: list[float] = []
     for item in summary:
-        if historical_outcomes:
-            baseline = sum(historical_outcomes) / len(historical_outcomes)
+        if len(historical_outcomes) >= ALERT_BASELINE_WINDOW:
+            window = historical_outcomes[-ALERT_BASELINE_WINDOW:]
+            baseline = sum(window) / len(window)
             if baseline > 0:
                 increase_ratio = (item.outcome - baseline) / baseline
                 if increase_ratio > threshold:
@@ -341,7 +358,7 @@ def get_metrics_comparison(
 
 @router.get("/api/metrics/alerts", response_model=list[MetricsAlert])
 def get_metrics_alerts(
-    threshold: float = Query(default=0.3, ge=0),
+    threshold: float = Query(default=0.3, ge=0.01, le=1.0),
     group_by: GroupBy = Query(default="month"),
     start_date: date | None = Query(default=None),
     end_date: date | None = Query(default=None),
