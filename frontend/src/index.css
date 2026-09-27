@@ -123,3 +123,9 @@ body,
 #root {
   min-height: 100%;
 }
+
+/* Keep keyboard focus visible against both light and dark surfaces. */
+:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}

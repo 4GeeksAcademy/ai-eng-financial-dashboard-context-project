@@ -10,7 +10,9 @@ export default defineConfig({
     host: "0.0.0.0",
     proxy: {
       "/api": {
-        target: "http://backend:8000",
+        // The frontend is currently run with `npm run dev` outside Docker.
+        // Use localhost so Vite can reach the locally running FastAPI server.
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
     },
