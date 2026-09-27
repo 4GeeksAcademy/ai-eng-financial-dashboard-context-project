@@ -3,7 +3,12 @@ from datetime import date
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.routes import filter_movements_by_date, generate_mock_movements
+from app.routes import (
+    MetricsSummaryItem,
+    detect_outcome_alerts,
+    filter_movements_by_date,
+    generate_mock_movements,
+)
 
 
 client = TestClient(app)
@@ -118,6 +123,29 @@ def test_metrics_facets_returns_filter_options_and_date_range():
     assert payload["min_date"] <= payload["max_date"]
 
 
+def test_metrics_facets_lists_categories_per_business_type_and_operation():
+    movements = generate_mock_movements(seed=42)
+    expected = {
+        business_type: {
+            operation_type: sorted(
+                {
+                    item.category
+                    for item in movements
+                    if item.business_type == business_type
+                    and item.operation_type == operation_type
+                }
+            )
+            for operation_type in ("income", "outcome")
+        }
+        for business_type in ("B2B", "B2C")
+    }
+
+    response = client.get("/api/metrics/facets")
+
+    assert response.status_code == 200
+    assert response.json()["categories_by_business_type"] == expected
+
+
 def test_metrics_summary_by_month_returns_balances():
     response = client.get("/api/metrics/summary", params={"group_by": "month"})
 
@@ -187,3 +215,46 @@ def test_metrics_alerts_returns_anomaly_candidates():
             "baseline_average",
             "increase_ratio",
         }
+
+
+def _summary(outcomes: list[float]) -> list[MetricsSummaryItem]:
+    return [
+        MetricsSummaryItem(
+            period=f"2025-{index + 1:02d}", income=0, outcome=value, net=-value
+        )
+        for index, value in enumerate(outcomes)
+    ]
+
+
+def test_detect_outcome_alerts_uses_rolling_average_of_previous_three_periods():
+    # A cumulative mean (325) would hide the spike in period 5.
+    alerts = detect_outcome_alerts(_summary([1000, 100, 100, 100, 130]), 0.2)
+
+    assert [alert.period for alert in alerts] == ["2025-05"]
+    assert alerts[0].outcome_total == 130
+    assert alerts[0].baseline_average == 100
+    assert alerts[0].increase_ratio == 0.3
+
+
+def test_detect_outcome_alerts_skips_periods_without_full_window():
+    alerts = detect_outcome_alerts(_summary([10, 100, 1000]), 0.3)
+
+    assert alerts == []
+
+
+def test_detect_outcome_alerts_requires_ratio_strictly_above_threshold():
+    alerts = detect_outcome_alerts(_summary([100, 100, 100, 130]), 0.3)
+
+    assert alerts == []
+
+
+def test_metrics_alerts_rejects_threshold_out_of_range():
+    for threshold in (0, 0.009, 1.01):
+        response = client.get(
+            "/api/metrics/alerts", params={"threshold": threshold})
+        assert response.status_code == 422
+
+    for threshold in (0.01, 1.0):
+        response = client.get(
+            "/api/metrics/alerts", params={"threshold": threshold})
+        assert response.status_code == 200
