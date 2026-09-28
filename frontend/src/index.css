@@ -133,6 +133,12 @@
   }
 }
 
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
 
 html,
 body,
