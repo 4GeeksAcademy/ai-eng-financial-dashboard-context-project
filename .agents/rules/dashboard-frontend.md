@@ -1,7 +1,7 @@
 # Dashboard Frontend Rules
 
 - The frontend is a React + TypeScript single-page app built with Vite. Do not use Next.js APIs or assume Vercel is the deployment target.
-- Keep API requests on `/api/metrics` to use the configured Vite proxy. `VITE_API_BASE_URL` is only for an alternate API origin. Verify the proxy route separately from direct API access; the shell returning 200 does not prove the dashboard data loaded.
+- Keep API requests on `/api/metrics` to use the configured Vite proxy. `VITE_API_BASE_URL` is only for an alternate API origin. In Compose, `VITE_API_PROXY_TARGET` and the `host.docker.internal:host-gateway` mapping route through the published FastAPI port; keep them aligned. Verify the proxy route separately from direct API access; the shell returning 200 does not prove the dashboard data loaded.
 - Reuse `MonthlyDataPoint`, `financial-types.ts`, and `financial-utils.ts` for chart data and financial formatting/calculation; do not duplicate business logic in components.
 - Keep financial charts keyboard-accessible with Recharts `accessibilityLayer`, a descriptive name, and an equivalent screen-reader-readable data table.
 - Preserve the 280px chart plot placeholder during loading so deferred chart code does not cause avoidable layout shifts.
