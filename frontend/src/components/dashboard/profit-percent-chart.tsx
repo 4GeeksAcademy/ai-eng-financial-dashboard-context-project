@@ -50,7 +50,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
   if (loading) {
     return (
-      <Card className="border-border/60">
+      <Card className="border-border/60" aria-hidden="true">
         <CardHeader className="pb-4">
           <Skeleton className="h-5 w-52" />
           <Skeleton className="h-3 w-64 mt-1" />
@@ -76,8 +76,14 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart
+                accessibilityLayer
+                aria-label="Monthly profit margin chart. Use the arrow keys to explore values."
+                data={data}
+                margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
                 dataKey="month"
@@ -104,8 +110,26 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
                 dot={{ r: 3, fill: 'var(--chart-profit)', strokeWidth: 0 }}
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
-            </LineChart>
-          </ResponsiveContainer>
+              </LineChart>
+            </ResponsiveContainer>
+            <table className="sr-only">
+              <caption>Monthly profit margin as a percentage</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col">Profit margin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((point) => (
+                  <tr key={point.month}>
+                    <th scope="row">{point.month}</th>
+                    <td>{point.profitPercent.toFixed(1)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </CardContent>
     </Card>
