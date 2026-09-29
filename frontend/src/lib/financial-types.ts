@@ -10,6 +10,13 @@ export interface FinancialMovement {
   business_type: BusinessType
 }
 
+export interface MetricsSummaryItem {
+  period: string
+  income: number
+  outcome: number
+  net: number
+}
+
 export interface KPIMetrics {
   totalIncome: number
   totalOutcome: number

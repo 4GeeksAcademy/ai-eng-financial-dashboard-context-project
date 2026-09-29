@@ -71,12 +71,21 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
+          <div
+            className="flex h-[280px] items-center justify-center text-muted-foreground text-sm"
+            role="status"
+            aria-live="polite"
+          >
             No data available to display
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <LineChart
+              data={data}
+              margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+              role="img"
+              aria-label="Income vs Outcome line chart showing monthly revenue and expenditure evolution"
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
                 dataKey="month"
@@ -117,6 +126,20 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
               />
             </LineChart>
           </ResponsiveContainer>
+        )}
+        {/* Visually hidden data table for screen readers */}
+        {hasData && (
+          <div className="sr-only" role="table" aria-label="Income vs Outcome monthly data">
+            <div role="rowgroup">
+              {data.map((d) => (
+                <div key={d.month} role="row">
+                  <span role="cell">{d.month}</span>
+                  <span role="cell">Income: {formatCurrency(d.income)}</span>
+                  <span role="cell">Outcome: {formatCurrency(d.outcome)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>
