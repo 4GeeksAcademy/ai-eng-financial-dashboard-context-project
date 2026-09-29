@@ -5,9 +5,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
+    environment:
+      VITE_API_PROXY_TARGET: http://host.docker.internal:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - backend
 
