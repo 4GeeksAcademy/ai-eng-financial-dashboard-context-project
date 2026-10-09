@@ -1,15 +1,10 @@
-# Agent Guidance
+# Agent and Contributor Guidance
 
-Agents working on this project **must**:
+Human contributors and coding agents working on this project must:
 
-- Look for **work instructions and rules** in the directory:  
-  `./.agents/rules`
+- Read [`verificacions-phase2.md`](./verificacions-phase2.md) before making changes. It is the approved, normative engineering standard for this repository.
+- Review applicable instructions and skills under `./.agents/rules` and `./.agents/skills` when those directories exist.
+- Review `./memory-bank` when it exists.
+- Before analyzing, modifying, or generating project content, check the latest applicable guidance and preserve existing project conventions and user changes.
+- Run focused checks for the work performed and report which checks were actually executed and their results. Do not describe an unrun check as passing.
 
-- Look for available **agent skills** in the directory:  
-  `./.agents/skills`
-
-- Look for the **project memory bank** in:  
-  `./memory-bank`  
-  _(if the directory exists)_
-
-Before taking action (analyzing code, modifying files, or generating outputs), always review the latest files in these locations to ensure compliance with project conventions, context, and operational constraints.

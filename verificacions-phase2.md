@@ -1,0 +1,26 @@
+# Phase 2 Engineering Standards
+
+These approved standards are normative for human contributors and coding agents. Source code and project-authored Markdown are written in English. The only Spanish Markdown document is the root [`README.es.md`](README.es.md), paired with [`README.md`](README.md).
+
+| Category | Approved standard | Repository evidence |
+|---|---|---|
+| Source language | Write all source code in English, including identifiers, comments, docstrings, technical messages, tests, and user-facing string literals. | API fields/literals are English in [routes.py](backend/app/routes.py); dashboard copy is in [kpi-row.tsx](frontend/src/components/dashboard/kpi-row.tsx) and [App.tsx](frontend/src/App.tsx). |
+| Documentation language | Write project-authored Markdown in English. The only Spanish Markdown exception is the root `README.es.md`, kept equivalent to `README.md`. | [README.md](README.md) and [README.es.md](README.es.md) are the project's README pair. |
+| Naming | Use PascalCase for React components and exported types, kebab-case for component filenames, camelCase for TypeScript variables/functions, and snake_case for Python functions/variables. | [kpi-card.tsx](frontend/src/components/dashboard/kpi-card.tsx) exports `KPICard`; [routes.py](backend/app/routes.py) defines `generate_mock_movements`. |
+| Frontend boundaries | Separate screen composition, reusable components, domain calculations, and types. Keep substantial financial calculations out of presentation components. | [App.tsx](frontend/src/App.tsx) composes the screen; [financial-utils.ts](frontend/src/lib/financial-utils.ts) computes KPIs; [financial-types.ts](frontend/src/lib/financial-types.ts) defines types. |
+| Frontend structure | Group feature-specific components by feature and broadly reusable primitives under `src/components/ui`; keep structure proportional to feature size. | Dashboard components live under `components/dashboard`; [card.tsx](frontend/src/components/ui/card.tsx) is shared. |
+| Backend boundaries | Keep API boundaries, models, and validation explicit. Split routers/services when growth warrants it; avoid premature layers. | [routes.py](backend/app/routes.py) currently contains models, helpers, and routes; [main.py](backend/app/main.py) registers the router. |
+| API contracts | Type and validate parameters/responses, declare response models, and keep frontend types aligned with API payloads. | [routes.py](backend/app/routes.py) uses Pydantic, `Literal`, and `response_model`; [financial-types.ts](frontend/src/lib/financial-types.ts) defines frontend shapes. |
+| Imports and UI | Use `@/` for imports rooted at `src`; reuse `cn`, shared UI primitives, and existing CSS variables. | Alias in [vite.config.ts](frontend/vite.config.ts)/[tsconfig.app.json](frontend/tsconfig.app.json); helper in [utils.ts](frontend/src/lib/utils.ts); tokens in [index.css](frontend/src/index.css). |
+| Testing | Add behavior-focused tests. Backend tests use `backend/tests/test_*.py`; frontend unit tests use `*.test.ts`/`*.test.tsx` near the tested module. | [test_routes.py](backend/tests/test_routes.py) uses pytest/TestClient; [financial-utils.test.ts](frontend/src/lib/financial-utils.test.ts) tests frontend calculations. |
+| Verification evidence | Distinguish static inspection, existing tests, and tests actually executed. Report real commands/results; never claim an unrun test passed. | [verifications.md](verifications.md) records static review and that tests were not run. |
+| Synthetic data | Treat generators and fixtures as demo/test data, never as real financial records. Avoid duplicate mock sources in the same active flow. | [routes.py](backend/app/routes.py) generates data; [mock-data.ts](frontend/src/lib/mock-data.ts) is not imported in the active [App.tsx](frontend/src/App.tsx) flow. |
+| Local development | Use Docker Compose as the documented local entry point; keep commands and URLs in both README versions. | [docker-compose.yml](docker-compose.yml), [README.md](README.md), [README.es.md](README.es.md). |
+| Secrets | Never hardcode secrets, credentials, tokens, API keys, or deployment-specific values. Use environment variables or an approved secret store; never log secrets. | [.gitignore](.gitignore) excludes `.env*` while allowing `.env.example`; README documents `VITE_API_BASE_URL`. |
+| Secure configuration | Do not use development defaults in production. Restrict CORS and disable debugpy, autoreload, and debug ports in production. | [main.py](backend/app/main.py) currently allows wildcard CORS; [backend/Dockerfile](backend/Dockerfile) enables development autoreload/debugpy. |
+| Agent guidance | [AGENTS.md](AGENTS.md) is the entry point; humans and agents must read it and applicable rules before editing. | The existing `AGENTS.md` defines mandatory pre-work guidance. |
+| Evidence vs. policy | Keep verification reports as dated evidence, separate from normative rules. Refresh evidence when implementation changes. | [verifications.md](verifications.md) describes implementation, endpoints, and review limits. |
+
+## Explicit exclusions
+
+This phase does not adopt a mandatory automated formatting/lint policy or a backend dependency-pinning policy. Existing configurations remain until a separate decision.
