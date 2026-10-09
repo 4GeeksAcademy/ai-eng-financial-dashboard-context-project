@@ -143,6 +143,17 @@ def filter_movements(
     return filtered
 
 
+def filter_by_business_type(
+    movements: list[FinancialMovement],
+    business_type: BusinessType | None,
+) -> list[FinancialMovement]:
+    if business_type is None:
+        return movements
+    return [
+        movement for movement in movements if movement.business_type == business_type
+    ]
+
+
 def ensure_chronological_order(movements: list[FinancialMovement]) -> list[FinancialMovement]:
     return sorted(movements, key=lambda item: item.create_date)
 
@@ -275,9 +286,7 @@ def get_metrics_summary(
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsSummaryItem]:
     movements = generate_mock_movements(seed=42)
-    if business_type is not None:
-        movements = [
-            item for item in movements if item.business_type == business_type]
+    movements = filter_by_business_type(movements, business_type)
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )
@@ -293,9 +302,7 @@ def get_top_categories(
     business_type: BusinessType | None = Query(default=None),
 ) -> list[TopCategoryItem]:
     movements = generate_mock_movements(seed=42)
-    if business_type is not None:
-        movements = [
-            item for item in movements if item.business_type == business_type]
+    movements = filter_by_business_type(movements, business_type)
     filtered = filter_movements(
         movements, start_date, end_date, category=None, operation_type=operation_type
     )
@@ -309,9 +316,7 @@ def get_metrics_comparison(
     business_type: BusinessType | None = Query(default=None),
 ) -> MetricsComparison:
     movements = generate_mock_movements(seed=42)
-    if business_type is not None:
-        movements = [
-            item for item in movements if item.business_type == business_type]
+    movements = filter_by_business_type(movements, business_type)
 
     current_movements = filter_movements(
         movements, start_date, end_date, category=None, operation_type=None
@@ -348,9 +353,7 @@ def get_metrics_alerts(
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsAlert]:
     movements = generate_mock_movements(seed=42)
-    if business_type is not None:
-        movements = [
-            item for item in movements if item.business_type == business_type]
+    movements = filter_by_business_type(movements, business_type)
 
     filtered = filter_movements(
         movements, start_date, end_date, category=None, operation_type=None
@@ -366,9 +369,7 @@ def get_b2b_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
-    movements = [
-        movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2B"
-    ]
+    movements = filter_by_business_type(generate_mock_movements(seed=42), "B2B")
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )
@@ -382,9 +383,7 @@ def get_b2c_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
-    movements = [
-        movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2C"
-    ]
+    movements = filter_by_business_type(generate_mock_movements(seed=42), "B2C")
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )

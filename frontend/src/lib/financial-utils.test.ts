@@ -101,6 +101,40 @@ describe("computeMonthlyData", () => {
       profitPercent: 100,
     });
   });
+
+  it("keeps the first and last day of a month in their own month", () => {
+    const edgeDayMovements: FinancialMovement[] = [
+      {
+        create_date: "2025-12-01",
+        amount: 100,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+      {
+        create_date: "2025-11-30",
+        amount: 40,
+        operation_type: "outcome",
+        category: "operational",
+        business_type: "B2B",
+      },
+      {
+        create_date: "2025-12-31",
+        amount: 60,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2C",
+      },
+    ];
+    const monthlyData = computeMonthlyData(edgeDayMovements);
+
+    expect(monthlyData.map((point) => point.month)).toEqual([
+      "Nov 2025",
+      "Dec 2025",
+    ]);
+    expect(monthlyData[0].outcome).toBe(40);
+    expect(monthlyData[1].income).toBe(160);
+  });
 });
 
 describe("formatters", () => {
