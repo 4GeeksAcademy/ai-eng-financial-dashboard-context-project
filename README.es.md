@@ -43,7 +43,19 @@ docker compose up --build
 ```
 
 El frontend usa por defecto el proxy de Vite para `/api`, así que no necesitas variables de entorno extra ni en desarrollo local ni en Codespaces.
-Si necesitas apuntar a otro backend, copia `frontend/.env.example` como `.env` y define `VITE_API_BASE_URL`.
+Si necesitas apuntar a otro backend, copia `frontend/.env.example` como `frontend/.env` y define `VITE_API_BASE_URL`.
+
+### Validación de cambios
+
+```bash
+# Backend
+(cd backend && pytest)
+
+# Frontend (cada comando se ejecuta en su directorio)
+(cd frontend && npm test)
+(cd frontend && npm run build)
+(cd frontend && npm run lint)
+```
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000

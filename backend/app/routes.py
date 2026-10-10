@@ -251,8 +251,13 @@ def get_metrics(
     end_date: date | None = Query(default=None),
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
+    business_type: BusinessType | None = Query(default=None),
 ) -> list[FinancialMovement]:
     movements = generate_mock_movements(seed=42)
+    if business_type is not None:
+        movements = [
+            movement for movement in movements if movement.business_type == business_type
+        ]
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )

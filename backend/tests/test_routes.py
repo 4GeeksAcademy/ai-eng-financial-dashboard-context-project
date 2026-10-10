@@ -87,6 +87,21 @@ def test_metrics_endpoint_filters_by_operation_type():
     assert all(item["operation_type"] == "income" for item in payload)
 
 
+def test_metrics_endpoint_filters_by_business_type():
+    response = client.get("/api/metrics", params={"business_type": "B2C"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload
+    assert all(item["business_type"] == "B2C" for item in payload)
+
+
+def test_metrics_endpoint_rejects_unknown_business_type():
+    response = client.get("/api/metrics", params={"business_type": "B2G"})
+
+    assert response.status_code == 422
+
+
 def test_b2b_endpoint_combines_new_filters():
     response = client.get(
         "/api/metrics/b2b",
