@@ -5,6 +5,7 @@ import {
   computeMonthlyData,
   formatCurrency,
   formatPercent,
+  getDashboardPeriod,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -100,6 +101,16 @@ describe("computeMonthlyData", () => {
       outcome: 0,
       profitPercent: 100,
     });
+  });
+});
+
+describe("getDashboardPeriod", () => {
+  it("derives a chronological period from date-only API values", () => {
+    expect(getDashboardPeriod(sampleMovements)).toBe("Jan 10, 2024 - Feb 1, 2024");
+  });
+
+  it("handles an empty result set", () => {
+    expect(getDashboardPeriod([])).toBe("No financial data");
   });
 });
 

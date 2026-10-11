@@ -1,4 +1,5 @@
 from datetime import date
+import random
 
 from fastapi.testclient import TestClient
 
@@ -14,6 +15,15 @@ def test_generate_mock_movements_returns_full_year_sorted_data():
 
     assert len(movements) == 360
     assert movements == sorted(movements, key=lambda item: item.create_date)
+
+
+def test_generate_mock_movements_does_not_mutate_global_random_state():
+    random.seed(123)
+    random_state = random.getstate()
+
+    generate_mock_movements(seed=42)
+
+    assert random.getstate() == random_state
 
 
 def test_filter_movements_by_date_includes_range_edges():

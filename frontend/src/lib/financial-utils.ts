@@ -4,8 +4,8 @@ import {
   type MonthlyDataPoint,
 } from "./financial-types";
 
-function toYearMonthKey(value: Date): string {
-  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+function toYearMonthKey(dateOnly: string): string {
+  return dateOnly.slice(0, 7);
 }
 
 function formatMonthYearLabel(yearMonthKey: string): string {
@@ -14,6 +14,19 @@ function formatMonthYearLabel(yearMonthKey: string): string {
   const month = Number(monthText) - 1;
   return new Date(year, month, 1).toLocaleDateString("en-US", {
     month: "short",
+    year: "numeric",
+  });
+}
+
+function formatDateOnlyLabel(value: string): string {
+  const [yearText, monthText, dayText] = value.split("-");
+  return new Date(
+    Number(yearText),
+    Number(monthText) - 1,
+    Number(dayText),
+  ).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
     year: "numeric",
   });
 }
@@ -39,7 +52,7 @@ export function computeMonthlyData(
   const monthlyMap: Record<string, { income: number; outcome: number }> = {};
 
   for (const m of movements) {
-    const yearMonthKey = toYearMonthKey(new Date(m.create_date));
+    const yearMonthKey = toYearMonthKey(m.create_date);
     if (!monthlyMap[yearMonthKey]) {
       monthlyMap[yearMonthKey] = { income: 0, outcome: 0 };
     }
@@ -64,6 +77,22 @@ export function computeMonthlyData(
         profitPercent,
       };
     });
+}
+
+export function getDashboardPeriod(movements: FinancialMovement[]): string {
+  if (movements.length === 0) {
+    return "No financial data";
+  }
+
+  const dates = movements.map((movement) => movement.create_date).sort();
+  const firstDate = dates[0];
+  const lastDate = dates[dates.length - 1];
+
+  if (firstDate === lastDate) {
+    return formatDateOnlyLabel(firstDate);
+  }
+
+  return `${formatDateOnlyLabel(firstDate)} - ${formatDateOnlyLabel(lastDate)}`;
 }
 
 export function formatCurrency(value: number): string {

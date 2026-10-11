@@ -48,6 +48,7 @@ If you need to target a different backend origin, copy `frontend/.env.example` t
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000
 - API documentation: http://localhost:8000/docs
+- Backend debugger: port 5678 (debugpy)
 
 ---
 
