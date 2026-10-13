@@ -1,4 +1,4 @@
-# Panel de Métricas Financieras
+# Panel de Métricas
 
 <!-- hide -->
 
