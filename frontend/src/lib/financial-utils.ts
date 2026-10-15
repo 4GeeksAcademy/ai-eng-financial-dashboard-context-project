@@ -4,8 +4,8 @@ import {
   type MonthlyDataPoint,
 } from "./financial-types";
 
-function toYearMonthKey(value: Date): string {
-  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+function toYearMonthKey(dateOnly: string): string {
+  return dateOnly.slice(0, 7);
 }
 
 function formatMonthYearLabel(yearMonthKey: string): string {
@@ -33,13 +33,25 @@ export function computeKPIs(movements: FinancialMovement[]): KPIMetrics {
   return { totalIncome, totalOutcome, profit, profitPercent };
 }
 
+export function formatPeriodLabel(movements: FinancialMovement[]): string {
+  const years = movements
+    .map((movement) => movement.create_date.slice(0, 4))
+    .sort();
+
+  if (years.length === 0) return "No period available";
+
+  const firstYear = years[0];
+  const lastYear = years[years.length - 1];
+  return firstYear === lastYear ? firstYear : `${firstYear} - ${lastYear}`;
+}
+
 export function computeMonthlyData(
   movements: FinancialMovement[],
 ): MonthlyDataPoint[] {
   const monthlyMap: Record<string, { income: number; outcome: number }> = {};
 
   for (const m of movements) {
-    const yearMonthKey = toYearMonthKey(new Date(m.create_date));
+    const yearMonthKey = toYearMonthKey(m.create_date);
     if (!monthlyMap[yearMonthKey]) {
       monthlyMap[yearMonthKey] = { income: 0, outcome: 0 };
     }

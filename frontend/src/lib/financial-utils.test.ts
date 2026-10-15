@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeKPIs,
   computeMonthlyData,
+  formatPeriodLabel,
   formatCurrency,
   formatPercent,
 } from "./financial-utils";
@@ -61,6 +62,14 @@ describe("computeKPIs", () => {
 });
 
 describe("computeMonthlyData", () => {
+  it("keeps a date-only first-of-month in its calendar month", () => {
+    const monthlyData = computeMonthlyData([
+      { ...sampleMovements[0], create_date: "2025-03-01" },
+    ]);
+
+    expect(monthlyData[0].month).toBe("Mar 2025");
+  });
+
   it("returns chronological year-month points with aggregated totals", () => {
     const unsortedCrossYearMovements: FinancialMovement[] = [
       {
@@ -100,6 +109,19 @@ describe("computeMonthlyData", () => {
       outcome: 0,
       profitPercent: 100,
     });
+  });
+});
+
+describe("formatPeriodLabel", () => {
+  it("uses the years present in the movements", () => {
+    expect(formatPeriodLabel([
+      { ...sampleMovements[0], create_date: "2026-01-01" },
+      { ...sampleMovements[1], create_date: "2025-12-31" },
+    ])).toBe("2025 - 2026");
+  });
+
+  it("returns a neutral label for an empty payload", () => {
+    expect(formatPeriodLabel([])).toBe("No period available");
   });
 });
 

@@ -1,10 +1,10 @@
 import { LayoutDashboard } from 'lucide-react'
 
 interface DashboardHeaderProps {
-  period?: string
+  period: string
 }
 
-export function DashboardHeader({ period = '2024 — Full Year' }: DashboardHeaderProps) {
+export function DashboardHeader({ period }: DashboardHeaderProps) {
   return (
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div className="flex items-center gap-3">
