@@ -75,7 +75,15 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
+          <div>
+            <p className="sr-only" id="income-outcome-description">
+              Monthly income and outcome data:
+              {data.map((month) =>
+                ` ${month.month}: income ${formatCurrency(month.income)}, outcome ${formatCurrency(month.outcome)}.`
+              ).join("")}
+            </p>
+            <div role="img" aria-label="Line chart comparing monthly income and outcome" aria-describedby="income-outcome-description">
+              <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
@@ -116,7 +124,9 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
                 activeDot={{ r: 5, strokeWidth: 0 }}
               />
             </LineChart>
-          </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>
