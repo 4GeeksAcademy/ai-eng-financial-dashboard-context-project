@@ -68,19 +68,21 @@ def _year_for_month(month: int, today: date) -> int:
     return today.year - 1
 
 
-def _build_movement(month: int, income_probability: float, today: date) -> FinancialMovement:
-    operation_type: OperationType = "income" if random.random(
+def _build_movement(
+    month: int, income_probability: float, today: date, rng: random.Random
+) -> FinancialMovement:
+    operation_type: OperationType = "income" if rng.random(
     ) < income_probability else "outcome"
-    movement_day = random.randint(1, 28)
+    movement_day = rng.randint(1, 28)
     movement_date = date(_year_for_month(month, today), month, movement_day)
-    business_type: BusinessType = "B2B" if random.random() < 0.55 else "B2C"
+    business_type: BusinessType = "B2B" if rng.random() < 0.55 else "B2C"
 
     if operation_type == "income":
-        category: Category = "sales" if random.random() < 0.9 else "others"
-        amount = round(random.uniform(800, 12000), 2)
+        category: Category = "sales" if rng.random() < 0.9 else "others"
+        amount = round(rng.uniform(800, 12000), 2)
     else:
-        category = random.choice(OUTCOME_CATEGORIES)
-        amount = round(random.uniform(500, 9000), 2)
+        category = rng.choice(OUTCOME_CATEGORIES)
+        amount = round(rng.uniform(500, 9000), 2)
 
     return FinancialMovement(
         create_date=movement_date,
@@ -92,14 +94,13 @@ def _build_movement(month: int, income_probability: float, today: date) -> Finan
 
 
 def generate_mock_movements(seed: int | None = None) -> list[FinancialMovement]:
-    if seed is not None:
-        random.seed(seed)
+    rng = random.Random(seed)
     today = date.today()
     movements: list[FinancialMovement] = []
     for month in range(1, 13):
-        income_probability = random.uniform(0.45, 0.7)
+        income_probability = rng.uniform(0.45, 0.7)
         for _ in range(30):
-            movements.append(_build_movement(month, income_probability, today))
+            movements.append(_build_movement(month, income_probability, today, rng))
     movements.sort(key=lambda item: item.create_date)
     return movements
 

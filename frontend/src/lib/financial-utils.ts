@@ -5,7 +5,7 @@ import {
 } from "./financial-types";
 
 function toYearMonthKey(value: Date): string {
-  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+  return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 function formatMonthYearLabel(yearMonthKey: string): string {
@@ -64,6 +64,14 @@ export function computeMonthlyData(
         profitPercent,
       };
     });
+}
+
+export function formatPeriodRange(monthlyData: MonthlyDataPoint[]): string {
+  if (monthlyData.length === 0) {
+    return "Period unavailable";
+  }
+
+  return `${monthlyData[0].month} - ${monthlyData[monthlyData.length - 1].month}`;
 }
 
 export function formatCurrency(value: number): string {

@@ -8,7 +8,11 @@ import {
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "@/lib/financial-types";
-import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
+import {
+  computeKPIs,
+  computeMonthlyData,
+  formatPeriodRange,
+} from "@/lib/financial-utils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -25,6 +29,7 @@ function App() {
   const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const period = loading ? "Loading..." : formatPeriodRange(monthlyData);
 
   useEffect(() => {
     fetchFinancialData()
@@ -46,7 +51,7 @@ function App() {
     <main className="dark min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
-          <DashboardHeader period="2024 - Full Year" />
+          <DashboardHeader period={period} />
 
           {error ? (
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">

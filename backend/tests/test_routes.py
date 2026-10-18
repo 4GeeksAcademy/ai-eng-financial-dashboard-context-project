@@ -1,3 +1,4 @@
+import random
 from datetime import date
 
 from fastapi.testclient import TestClient
@@ -16,6 +17,22 @@ def test_generate_mock_movements_returns_full_year_sorted_data():
     assert movements == sorted(movements, key=lambda item: item.create_date)
 
 
+def test_generate_mock_movements_preserves_global_random_state():
+    previous_state = random.getstate()
+    try:
+        generate_mock_movements(seed=42)
+        assert random.getstate() == previous_state
+    finally:
+        random.setstate(previous_state)
+
+
+def test_generate_mock_movements_repeats_same_seed():
+    first_movements = generate_mock_movements(seed=42)
+    generate_mock_movements(seed=7)
+
+    assert generate_mock_movements(seed=42) == first_movements
+
+
 def test_filter_movements_by_date_includes_range_edges():
     movements = generate_mock_movements(seed=42)
     target_date = movements[0].create_date
@@ -31,6 +48,25 @@ def test_health_endpoint_returns_ok():
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_metrics_endpoint_preserves_financial_movement_contract():
+    response = client.get("/api/metrics")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload
+    for movement in payload:
+        assert set(movement) == {
+            "create_date", "amount", "operation_type", "category", "business_type"
+        }
+        assert date.fromisoformat(movement["create_date"]).isoformat() == movement["create_date"]
+        assert type(movement["amount"]) in (int, float)
+        assert movement["operation_type"] in {"income", "outcome"}
+        assert movement["category"] in {
+            "suppliers", "sales", "operational", "administrative", "others"
+        }
+        assert movement["business_type"] in {"B2B", "B2C"}
 
 
 def test_metrics_endpoint_respects_date_filters():
