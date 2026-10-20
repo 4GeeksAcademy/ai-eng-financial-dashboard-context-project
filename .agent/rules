@@ -1,0 +1,5 @@
+# Reglas propuestas
+
+Las propuestas de convenciones para contribuidores y agentes están documentadas en [docs/analisis-fase-2.md](../docs/analisis-fase-2.md). Este análisis todavía no convierte esas propuestas en instrucciones obligatorias.
+
+Nota: `AGENTS.md` indica que la ubicación de reglas que deben revisar los agentes es `.agents/rules` (plural). Este archivo `.agent/rules` (singular) existe por solicitud explícita y no sustituye esa convención.

@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   computeKPIs,
   computeMonthlyData,
+  formatFinancialPeriod,
   formatCurrency,
   formatPercent,
 } from "./financial-utils";
@@ -101,6 +102,47 @@ describe("computeMonthlyData", () => {
       profitPercent: 100,
     });
   });
+
+  it("keeps ISO calendar dates in their month west of UTC", () => {
+    vi.stubEnv("TZ", "America/Los_Angeles");
+
+    const boundaryMovements: FinancialMovement[] = [
+      {
+        create_date: "2026-01-01",
+        amount: 300,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2C",
+      },
+      {
+        create_date: "2025-12-31",
+        amount: 200,
+        operation_type: "outcome",
+        category: "operational",
+        business_type: "B2B",
+      },
+    ];
+
+    expect(new Date("2026-01-01").getMonth()).toBe(11);
+    expect(computeMonthlyData(boundaryMovements).map((point) => point.month)).toEqual([
+      "Dec 2025",
+      "Jan 2026",
+    ]);
+  });
+});
+
+describe("formatFinancialPeriod", () => {
+  it("shows the first and last months represented in the movements", () => {
+    expect(formatFinancialPeriod(sampleMovements)).toBe("Jan 2024 - Feb 2024");
+  });
+
+  it("returns a clear label when there are no movements", () => {
+    expect(formatFinancialPeriod([])).toBe("Sin datos");
+  });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("formatters", () => {
