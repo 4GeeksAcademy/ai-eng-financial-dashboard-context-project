@@ -7,6 +7,7 @@ Agents working on this project **must**:
 
 - Look for available **agent skills** in the directory:  
   `./.agents/skills`
+- Look for internal project skills in `./.skills/` if it exists.
 
 - Look for the **project memory bank** in:  
   `./memory-bank`  
