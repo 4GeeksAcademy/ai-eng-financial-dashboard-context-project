@@ -1,0 +1,572 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HealthCore Telemetry Event Schemas",
+  "description": "JSON Schema definitions for all telemetry events in the HealthCore telemetry plan. Mandatory events are marked with \"mandatory\"; identified opportunities with \"opportunity\". Each event extends the standard event envelope.",
+  "version": "1.0.0",
+  "definitions": {
+    "eventEnvelope": {
+      "type": "object",
+      "description": "Standard envelope shared by all telemetry events. Every event in this file extends this base.",
+      "required": [
+        "eventId",
+        "timestamp",
+        "sessionId",
+        "userId",
+        "event_type",
+        "schemaVersion",
+        "requestId",
+        "properties"
+      ],
+      "properties": {
+        "eventId": { "type": "string", "format": "uuid", "description": "Unique event identifier for idempotency and deduplication." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Event timestamp in ISO 8601 UTC." },
+        "sessionId": { "type": "string", "description": "Browser or API session identifier." },
+        "userId": { "type": "string", "description": "Authenticated operator identifier. May be hashed per corporate PII policy." },
+        "event_type": { "type": "string", "pattern": "^[a-z]+_[a-z_]+$", "description": "Event type in entity_action taxonomy (e.g. order_submitted)." },
+        "schemaVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$", "description": "Schema version for the event (semver)." },
+        "requestId": { "type": "string", "description": "Correlation ID linking frontend, API, and logs." },
+        "properties": { "type": "object", "description": "Event-specific payload. Only properties from the defined allowlist are accepted." }
+      },
+      "additionalProperties": false
+    },
+    "sharedInventoryProperties": {
+      "type": "object",
+      "description": "Properties shared across all inventory events (mandatory and opportunity). No field contains PHI.",
+      "properties": {
+        "clinic_id": { "type": "string", "description": "Internal clinic identifier. Never a patient name." },
+        "country": { "type": "string", "enum": ["US", "UK"], "description": "Country code." },
+        "product_id": { "type": "string", "description": "Inventory product/item identifier." },
+        "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"], "description": "Product category as defined in the briefing." }
+      },
+      "additionalProperties": false
+    },
+    "inbound_order_created": {
+      "description": "MANDATORY (from BRIEFING). Fires when a clinic registers receipt of clinical supplies from a supplier (inbound movement). Batch — daily replenishment decisions.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "inbound_order_created" },
+            "properties": {
+              "type": "object",
+              "required": ["orderId", "clinic_id", "country", "product_id", "product_category", "quantity"],
+              "properties": {
+                "orderId": { "type": "string", "description": "Unique inbound movement/order identifier." },
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "quantity": { "type": "number", "minimum": 0, "description": "Received quantity." },
+                "supplier_id": { "type": "string", "description": "Optional supplier identifier." },
+                "supplier_name": { "type": "string", "description": "Optional supplier name. Organisational name, not PHI." },
+                "lot_id": { "type": "string", "description": "Optional lot identifier if supplies are lot-controlled." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "outbound_order_created": {
+      "description": "MANDATORY (from BRIEFING). Fires when a clinic registers consumption of a clinical supply at a department (outbound movement). Batch — consumption patterns reviewed daily.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "outbound_order_created" },
+            "properties": {
+              "type": "object",
+              "required": ["orderId", "clinic_id", "country", "product_id", "product_category", "quantity", "department"],
+              "properties": {
+                "orderId": { "type": "string", "description": "Unique outbound movement/order identifier." },
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "quantity": { "type": "number", "minimum": 0, "description": "Consumed quantity." },
+                "department": { "type": "string", "description": "Clinical department where the supply was consumed. Never a patient identifier." },
+                "lot_id": { "type": "string", "description": "Optional lot identifier if supplies are lot-controlled." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "stock_threshold_triggered": {
+      "description": "MANDATORY (from BRIEFING). Fires when product stock reaches or falls below the configured minimum threshold (reorder_point). Stream — near-real-time replenishment alert.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "stock_threshold_triggered" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "product_id", "product_category", "currentStock", "threshold"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "currentStock": { "type": "number", "description": "Current available stock after the triggering movement." },
+                "threshold": { "type": "number", "description": "Reorder point / configured minimum for this item at this clinic." },
+                "trigger_source": { "type": "string", "enum": ["outbound_order_created", "adjustment", "startup_scan"], "description": "What caused the stock to cross the threshold." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "direct_stock_edit_rejected": {
+      "description": "MANDATORY (from BRIEFING). Fires when a user attempts to modify stock directly (outside of an inbound/outbound order) and the system rejects it. Batch — staff behaviour review.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "direct_stock_edit_rejected" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "product_id", "product_category", "attempted_field", "reject_reason"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "attempted_field": { "type": "string", "enum": ["available_stock", "stock", "qty_on_hand"], "description": "The field the user tried to edit directly." },
+                "reject_reason": { "type": "string", "enum": ["stock_is_derived", "direct_edit_forbidden", "permission_denied"], "description": "The reason the system rejected the direct edit." },
+                "attempted_quantity": { "type": "number", "description": "Optional attempted quantity value (only safe numerical data)." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "supply_expiry_flagged": {
+      "description": "MANDATORY (from BRIEFING). Fires when a product lot approaches its expiry date (within 30 days). Stream — immediate action required to prevent loss.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "supply_expiry_flagged" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "product_id", "product_category", "lot_id", "expiry_date", "days_to_expiry"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "lot_id": { "type": "string", "description": "The lot identifier approaching expiry." },
+                "expiry_date": { "type": "string", "format": "date", "description": "The lot expiry date (ISO 8601 date)." },
+                "days_to_expiry": { "type": "integer", "minimum": 0, "description": "Number of days remaining until expiry." },
+                "quantity_on_lot": { "type": "number", "description": "Optional current quantity remaining in this lot." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "inventory_validation_failed": {
+      "description": "OPPORTUNITY (Category A: Inventory). Fires when an inventory form/request fails validation. Batch — aggregated daily for UX/process improvement.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "inventory_validation_failed" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "validation_rule", "http_status"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string", "description": "Optional product identifier if available in the request." },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "validation_rule": { "type": "string", "enum": ["duplicate_lot", "negative_quantity", "invalid_category", "missing_lot", "expired_lot", "non_positive_movement", "missing_adjustment_reason"], "description": "The validation rule that rejected the request." },
+                "field_name": { "type": "string", "description": "The field that triggered the validation error." },
+                "http_status": { "type": "integer", "enum": [400, 409, 422], "description": "HTTP status code returned to the client." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "outbound_expired_lot_rejected": {
+      "description": "OPPORTUNITY (Category A: Inventory). Fires when an outbound movement is rejected because the referenced lot has expired (expiry_date < today). Batch — training and compliance review.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "outbound_expired_lot_rejected" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "product_id", "product_category", "lot_id", "expiry_date"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "lot_id": { "type": "string" },
+                "expiry_date": { "type": "string", "format": "date" },
+                "requested_quantity": { "type": "number", "description": "Optional quantity the user attempted to move." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "inventory_item_created": {
+      "description": "OPPORTUNITY (Category A: Inventory). Fires when a new inventory item is created. Batch — catalogue governance.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "inventory_item_created" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "product_id", "product_category"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "name": { "type": "string", "description": "Item name (safe, no PHI)." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "inventory_item_updated": {
+      "description": "OPPORTUNITY (Category A: Inventory). Fires when an inventory item is updated. Batch — catalogue governance.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "inventory_item_updated" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "product_id", "product_category"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] },
+                "changed_fields": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "List of fields that were changed."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "inventory_item_deleted": {
+      "description": "OPPORTUNITY (Category A: Inventory). Fires when an inventory item is deleted (with history preservation if it has movements). Batch — catalogue governance.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "inventory_item_deleted" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country", "product_id", "product_category"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "product_id": { "type": "string" },
+                "product_category": { "type": "string", "enum": ["medication", "ppe", "consumable", "equipment"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "login_failed": {
+      "description": "OPPORTUNITY (Category B: Authentication). Fires when a login attempt fails. Stream — repeated failures require near-real-time account blocking.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "login_failed" },
+            "properties": {
+              "type": "object",
+              "required": ["failure_reason"],
+              "properties": {
+                "clinic_id": { "type": "string", "description": "Optional clinic context for the login attempt." },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "username": { "type": "string", "description": "Only hashed/anonimized username value. Never raw credentials." },
+                "failure_reason": { "type": "string", "enum": ["invalid_credentials", "account_locked", "expired_password", "rate_limited"], "description": "Typed reason for the login failure." },
+                "ip_geohash": { "type": "string", "description": "Optional approximate geo-hash of the IP (no exact location)." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "login_succeeded": {
+      "description": "OPPORTUNITY (Category B: Authentication). Fires when an operator successfully logs into the backoffice. Batch — adoption and usage patterns reviewed by shift.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "login_succeeded" },
+            "properties": {
+              "type": "object",
+              "required": ["clinic_id", "country"],
+              "properties": {
+                "clinic_id": { "type": "string" },
+                "country": { "type": "string", "enum": ["US", "UK"] },
+                "role": { "type": "string", "description": "Optional role of the authenticated operator." },
+                "auth_method": { "type": "string", "enum": ["password", "sso", "mfa"], "description": "Authentication method used." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "api_latency_recorded": {
+      "description": "OPPORTUNITY (Category C: Performance). Fires on sampled API requests to capture endpoint latency. Batch — optimisations reviewed by period. Sampled at 10%.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "api_latency_recorded" },
+            "properties": {
+              "type": "object",
+              "required": ["endpoint", "method", "http_status", "duration_ms", "sampling"],
+              "properties": {
+                "endpoint": { "type": "string", "description": "API endpoint path (e.g. /inventory/movements)." },
+                "method": { "type": "string", "enum": ["GET", "POST", "PATCH", "DELETE"], "description": "HTTP method." },
+                "http_status": { "type": "integer", "description": "HTTP response status code." },
+                "duration_ms": { "type": "number", "minimum": 0, "description": "Request duration in milliseconds." },
+                "client_region": { "type": "string", "description": "Optional approximate client region." },
+                "sampling": { "type": "boolean", "description": "Whether this is a sampled request (true for the 10% sample group)." },
+                "error_class": { "type": "string", "description": "Optional server error class if the response was an error." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "backend_error_caught": {
+      "description": "OPPORTUNITY (Category C: Performance). Fires when the backend raises an unhandled exception or significant business error (5xx, critical conflict). Stream — requires near-immediate notification for critical bugs.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "backend_error_caught" },
+            "properties": {
+              "type": "object",
+              "required": ["endpoint", "method", "http_status", "error_class", "error_message_hash"],
+              "properties": {
+                "endpoint": { "type": "string" },
+                "method": { "type": "string", "enum": ["GET", "POST", "PATCH", "DELETE"] },
+                "http_status": { "type": "integer", "description": "HTTP status code (5xx or conflict)." },
+                "error_class": { "type": "string", "description": "Exception class name (e.g. ValueError, HTTPException)." },
+                "error_message_hash": { "type": "string", "description": "Hash of the error message (never the raw message — may leak context)." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "frontend_error_caught": {
+      "description": "OPPORTUNITY (Category D: Frontend Errors). Fires when the backoffice frontend catches a UI error (React exception, network failure). Batch — aggregated daily for bug prioritisation.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "frontend_error_caught" },
+            "properties": {
+              "type": "object",
+              "required": ["page", "error_class", "error_message_hash"],
+              "properties": {
+                "page": { "type": "string", "description": "The backoffice section/page where the error occurred." },
+                "component": { "type": "string", "description": "Optional component name that caught the error." },
+                "error_class": { "type": "string", "description": "Error class name (e.g. TypeError, NetworkError)." },
+                "error_message_hash": { "type": "string", "description": "Hash of the error message. Never the raw message." },
+                "api_endpoint": { "type": "string", "description": "Optional API endpoint that the frontend was calling." },
+                "http_status": { "type": "integer", "description": "Optional HTTP status returned from the API call." },
+                "session_duration_ms": { "type": "number", "description": "Optional session duration at the time of error." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "section_viewed": {
+      "description": "OPPORTUNITY (Category E: Navigation). Fires when an operator navigates to a backoffice section. Batch — navigation heatmaps reviewed weekly.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "section_viewed" },
+            "properties": {
+              "type": "object",
+              "required": ["section"],
+              "properties": {
+                "section": { "type": "string", "enum": ["panel", "incidents", "inventory", "lots", "movements", "reports", "settings"], "description": "The backoffice section visited." },
+                "from_section": { "type": "string", "enum": ["panel", "incidents", "inventory", "lots", "movements", "reports", "settings"], "description": "Optional previous section the user came from." },
+                "clinic_id": { "type": "string", "description": "Optional clinic context." },
+                "entry_point": { "type": "string", "enum": ["nav", "deep_link", "refresh"], "description": "How the user entered this section." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "flow_abandoned": {
+      "description": "OPPORTUNITY (Category E: Navigation). Fires when a multi-step backoffice flow is abandoned midway. Batch — UX improvement prioritised per sprint.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "flow_abandoned" },
+            "properties": {
+              "type": "object",
+              "required": ["flow", "abandon_step"],
+              "properties": {
+                "flow": { "type": "string", "enum": ["create_inbound_order", "create_outbound_order", "create_incident", "edit_item", "create_lot"], "description": "The flow that was abandoned." },
+                "abandon_step": { "type": "integer", "minimum": 1, "description": "The step at which the user abandoned the flow." },
+                "section": { "type": "string", "enum": ["panel", "incidents", "inventory", "lots", "movements", "reports", "settings"], "description": "Optional section where the flow started." },
+                "time_spent_ms": { "type": "number", "minimum": 0, "description": "Optional time spent in the flow before abandonment." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "flow_completed": {
+      "description": "OPPORTUNITY (Category E: Navigation). Fires when a multi-step backoffice flow is completed successfully. Paired with flow_abandoned to compute completion rates.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "flow_completed" },
+            "properties": {
+              "type": "object",
+              "required": ["flow"],
+              "properties": {
+                "flow": { "type": "string", "enum": ["create_inbound_order", "create_outbound_order", "create_incident", "edit_item", "create_lot"], "description": "The flow that was completed." },
+                "duration_ms": { "type": "number", "minimum": 0, "description": "Optional total duration of the completed flow." },
+                "section": { "type": "string", "enum": ["panel", "incidents", "inventory", "lots", "movements", "reports", "settings"], "description": "Optional section where the flow was completed." }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "incident_created": {
+      "description": "OPPORTUNITY (Category F: Incidents). Fires when a new operational incident is registered in the incident manager. Batch — daily incident volume feeds operational reports.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "incident_created" },
+            "properties": {
+              "type": "object",
+              "required": ["incident_id", "incident_type", "severity", "channel"],
+              "properties": {
+                "incident_id": { "type": "string", "description": "Incident identifier." },
+                "incident_type": { "type": "string", "enum": ["clinical_operations", "patient_access", "billing_revenue", "compliance_data", "workforce", "technology"], "description": "Functional classification of the incident." },
+                "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"], "description": "Impact severity." },
+                "channel": { "type": "string", "enum": ["phone", "email", "internal_message", "monitoring", "in_person", "manual_entry"], "description": "Channel through which the incident was received." },
+                "responsible_area": { "type": "string", "enum": ["clinical_operations", "patient_access", "billing_revenue", "compliance_data", "workforce", "technology", "executive"], "description": "Optional responsible area." },
+                "clinic_id": { "type": "string", "description": "Optional clinic context." },
+                "country": { "type": "string", "enum": ["US", "UK"] }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "incident_status_changed": {
+      "description": "OPPORTUNITY (Category F: Incidents). Fires when an incident transitions status in its lifecycle. Stream — critical incidents stuck in blocked require near-immediate escalation.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "incident_status_changed" },
+            "properties": {
+              "type": "object",
+              "required": ["incident_id", "previous_status", "new_status", "severity"],
+              "properties": {
+                "incident_id": { "type": "string" },
+                "previous_status": { "type": "string", "enum": ["new", "triaged", "assigned", "in_progress", "blocked", "resolved", "closed"], "description": "Status before the change." },
+                "new_status": { "type": "string", "enum": ["new", "triaged", "assigned", "in_progress", "blocked", "resolved", "closed"], "description": "Status after the change." },
+                "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                "responsible_area": { "type": "string", "enum": ["clinical_operations", "patient_access", "billing_revenue", "compliance_data", "workforce", "technology", "executive"] },
+                "clinic_id": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    },
+    "incident_resolution_time_recorded": {
+      "description": "OPPORTUNITY (Category F: Incidents). Fires when an incident transitions to resolved/closed, recording resolution time. Batch — SLA compliance measured per period.",
+      "allOf": [
+        { "$ref": "#/definitions/eventEnvelope" },
+        {
+          "properties": {
+            "event_type": { "const": "incident_resolution_time_recorded" },
+            "properties": {
+              "type": "object",
+              "required": ["incident_id", "severity", "time_to_resolution_hours"],
+              "properties": {
+                "incident_id": { "type": "string" },
+                "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+                "responsible_area": { "type": "string", "enum": ["clinical_operations", "patient_access", "billing_revenue", "compliance_data", "workforce", "technology", "executive"] },
+                "time_to_resolution_hours": { "type": "number", "minimum": 0, "description": "Hours from incident creation to resolution." },
+                "channel": { "type": "string", "enum": ["phone", "email", "internal_message", "monitoring", "in_person", "manual_entry"] },
+                "clinic_id": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["event_type", "properties"]
+        }
+      ]
+    }
+  }
+}
