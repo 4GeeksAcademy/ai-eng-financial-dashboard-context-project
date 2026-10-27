@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeKPIs,
   computeMonthlyData,
+  computePeriodLabel,
   formatCurrency,
   formatPercent,
 } from "./financial-utils";
@@ -58,6 +59,17 @@ describe("computeKPIs", () => {
     const metrics = computeKPIs(onlyOutcomes);
     expect(metrics.profitPercent).toBe(0);
   });
+
+  it("returns zeroed metrics for an empty movement list", () => {
+    const metrics = computeKPIs([]);
+
+    expect(metrics).toEqual({
+      totalIncome: 0,
+      totalOutcome: 0,
+      profit: 0,
+      profitPercent: 0,
+    });
+  });
 });
 
 describe("computeMonthlyData", () => {
@@ -101,6 +113,10 @@ describe("computeMonthlyData", () => {
       profitPercent: 100,
     });
   });
+
+  it("returns an empty list when there are no movements", () => {
+    expect(computeMonthlyData([])).toEqual([]);
+  });
 });
 
 describe("formatters", () => {
@@ -110,5 +126,36 @@ describe("formatters", () => {
 
   it("formats percent with one decimal", () => {
     expect(formatPercent(15.555)).toBe("15.6%");
+  });
+});
+
+describe("computePeriodLabel", () => {
+  it("labels a single-year dataset as a full year", () => {
+    expect(computePeriodLabel(sampleMovements)).toBe("2024 - Full Year");
+  });
+
+  it("labels a cross-year dataset with its year range", () => {
+    const crossYearMovements: FinancialMovement[] = [
+      {
+        create_date: "2025-12-05",
+        amount: 200,
+        operation_type: "outcome",
+        category: "operational",
+        business_type: "B2B",
+      },
+      {
+        create_date: "2026-01-08",
+        amount: 300,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2C",
+      },
+    ];
+
+    expect(computePeriodLabel(crossYearMovements)).toBe("2025 - 2026");
+  });
+
+  it("returns a neutral label when there are no movements", () => {
+    expect(computePeriodLabel([])).toBe("No data");
   });
 });

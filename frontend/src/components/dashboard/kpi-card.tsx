@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { type LucideIcon } from 'lucide-react'
 
@@ -9,7 +8,6 @@ interface KPICardProps {
   helperText: string
   icon: LucideIcon
   variant: 'income' | 'outcome' | 'profit' | 'profitPercent'
-  loading?: boolean
 }
 
 const variantStyles: Record<KPICardProps['variant'], { badge: string; icon: string }> = {
@@ -31,23 +29,8 @@ const variantStyles: Record<KPICardProps['variant'], { badge: string; icon: stri
   },
 }
 
-export function KPICard({ label, value, helperText, icon: Icon, variant, loading }: KPICardProps) {
+export function KPICard({ label, value, helperText, icon: Icon, variant }: KPICardProps) {
   const styles = variantStyles[variant]
-
-  if (loading) {
-    return (
-      <Card className="border-border/60">
-        <CardContent className="p-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-4 w-28" />
-            <Skeleton className="h-8 w-8 rounded-lg" />
-          </div>
-          <Skeleton className="h-8 w-36" />
-          <Skeleton className="h-3 w-44" />
-        </CardContent>
-      </Card>
-    )
-  }
 
   return (
     <Card className="border-border/60 hover:border-border transition-colors">

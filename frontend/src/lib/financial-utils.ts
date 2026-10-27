@@ -78,3 +78,22 @@ export function formatCurrency(value: number): string {
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
 }
+
+export function computePeriodLabel(movements: FinancialMovement[]): string {
+  if (movements.length === 0) {
+    return "No data";
+  }
+
+  // Treat the API's date-only strings as calendar dates by reading the ISO
+  // year directly instead of parsing with `new Date()` (see rule 12).
+  const years = movements.map((movement) =>
+    Number(movement.create_date.slice(0, 4)),
+  );
+  const minYear = Math.min(...years);
+  const maxYear = Math.max(...years);
+
+  if (minYear === maxYear) {
+    return `${minYear} - Full Year`;
+  }
+  return `${minYear} - ${maxYear}`;
+}

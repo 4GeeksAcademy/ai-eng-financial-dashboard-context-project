@@ -101,6 +101,37 @@ def test_b2b_endpoint_combines_new_filters():
     assert all(item["category"] == "suppliers" for item in payload)
 
 
+def test_top_categories_accepts_limit_boundary_values():
+    for limit in (1, 20):
+        response = client.get(
+            "/api/metrics/categories/top", params={"limit": limit})
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload
+        assert len(payload) <= limit
+
+
+def test_top_categories_rejects_out_of_range_limit():
+    for limit in (0, 21):
+        response = client.get(
+            "/api/metrics/categories/top", params={"limit": limit})
+
+        assert response.status_code == 422
+
+
+def test_metrics_endpoint_rejects_invalid_enum_filter():
+    response = client.get("/api/metrics", params={"category": "invalid"})
+
+    assert response.status_code == 422
+
+
+def test_alerts_rejects_negative_threshold():
+    response = client.get("/api/metrics/alerts", params={"threshold": -0.1})
+
+    assert response.status_code == 422
+
+
 def test_metrics_facets_returns_filter_options_and_date_range():
     response = client.get("/api/metrics/facets")
 

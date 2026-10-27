@@ -14,7 +14,7 @@
   --secondary: oklch(0.93 0.01 240);
   --secondary-foreground: oklch(0.2 0.01 240);
   --muted: oklch(0.93 0.01 240);
-  --muted-foreground: oklch(0.5 0.01 240);
+  --muted-foreground: oklch(0.29 0.01 240);
   --accent: oklch(0.93 0.01 240);
   --accent-foreground: oklch(0.2 0.01 240);
   --destructive: oklch(0.577 0.245 27.325);
@@ -22,12 +22,12 @@
   --border: oklch(0.88 0.01 240);
   --input: oklch(0.88 0.01 240);
   --ring: oklch(0.55 0.2 255);
-  --chart-income: oklch(0.55 0.2 255);
-  --chart-outcome: oklch(0.65 0.18 30);
-  --chart-profit: oklch(0.6 0.16 160);
-  --chart-1: oklch(0.55 0.2 255);
-  --chart-2: oklch(0.65 0.18 30);
-  --chart-3: oklch(0.6 0.16 160);
+  --chart-income: oklch(0.45 0.2 255);
+  --chart-outcome: oklch(0.5 0.18 30);
+  --chart-profit: oklch(0.42 0.16 160);
+  --chart-1: oklch(0.45 0.2 255);
+  --chart-2: oklch(0.5 0.18 30);
+  --chart-3: oklch(0.42 0.16 160);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.627 0.265 303.9);
   --radius: 0.75rem;
@@ -122,4 +122,10 @@ html,
 body,
 #root {
   min-height: 100%;
+}
+
+/* Ensure a visible, high-contrast focus indicator for keyboard users (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }

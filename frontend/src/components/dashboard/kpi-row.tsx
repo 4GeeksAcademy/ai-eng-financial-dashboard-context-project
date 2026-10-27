@@ -1,48 +1,64 @@
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { KPICard } from './kpi-card'
 import { type KPIMetrics } from '@/lib/financial-types'
 import { formatCurrency, formatPercent } from '@/lib/financial-utils'
 import { TrendingUp, TrendingDown, DollarSign, BarChart2 } from 'lucide-react'
 
 interface KPIRowProps {
-  metrics: KPIMetrics | null
-  loading?: boolean
+  metrics: KPIMetrics
 }
 
-export function KPIRow({ metrics, loading }: KPIRowProps) {
+export function KPIRow({ metrics }: KPIRowProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       <KPICard
         label="Total Income"
-        value={metrics ? formatCurrency(metrics.totalIncome) : '—'}
+        value={formatCurrency(metrics.totalIncome)}
         helperText="Cumulative revenue from all income movements"
         icon={TrendingUp}
         variant="income"
-        loading={loading}
       />
       <KPICard
         label="Total Outcome"
-        value={metrics ? formatCurrency(metrics.totalOutcome) : '—'}
+        value={formatCurrency(metrics.totalOutcome)}
         helperText="Total expenditure across all categories"
         icon={TrendingDown}
         variant="outcome"
-        loading={loading}
       />
       <KPICard
         label="Profit"
-        value={metrics ? formatCurrency(metrics.profit) : '—'}
+        value={formatCurrency(metrics.profit)}
         helperText="Net profit — income minus total outcome"
         icon={DollarSign}
         variant="profit"
-        loading={loading}
       />
       <KPICard
         label="Profit Margin"
-        value={metrics ? formatPercent(metrics.profitPercent) : '—'}
+        value={formatPercent(metrics.profitPercent)}
         helperText="Profit as a percentage of total income"
         icon={BarChart2}
         variant="profitPercent"
-        loading={loading}
       />
+    </div>
+  )
+}
+
+export function KPIRowSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <Card key={i} className="border-border/60">
+          <CardContent className="p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-8 w-8 rounded-lg" />
+            </div>
+            <Skeleton className="h-8 w-36" />
+            <Skeleton className="h-3 w-44" />
+          </CardContent>
+        </Card>
+      ))}
     </div>
   )
 }
