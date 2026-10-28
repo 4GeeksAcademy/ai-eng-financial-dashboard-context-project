@@ -5,7 +5,7 @@ import {
 } from "./financial-types";
 
 function toYearMonthKey(value: Date): string {
-  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+  return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 function formatMonthYearLabel(yearMonthKey: string): string {
