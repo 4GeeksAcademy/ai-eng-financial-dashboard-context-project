@@ -1,5 +1,6 @@
 from datetime import date
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -47,6 +48,49 @@ def test_metrics_endpoint_respects_date_filters():
     payload = response.json()
     assert payload
     assert all(item["create_date"] == first_date for item in payload)
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/metrics",
+        "/api/metrics/summary",
+        "/api/metrics/categories/top",
+        "/api/metrics/comparison",
+        "/api/metrics/alerts",
+        "/api/metrics/b2b",
+        "/api/metrics/b2c",
+    ],
+)
+def test_metrics_endpoints_reject_inverted_date_ranges(path):
+    response = client.get(
+        path,
+        params={"start_date": "2025-02-02", "end_date": "2025-02-01"},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "start_date must be on or before end_date"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/metrics",
+        "/api/metrics/summary",
+        "/api/metrics/categories/top",
+        "/api/metrics/comparison",
+        "/api/metrics/alerts",
+        "/api/metrics/b2b",
+        "/api/metrics/b2c",
+    ],
+)
+def test_metrics_endpoints_accept_valid_date_ranges(path):
+    response = client.get(
+        path,
+        params={"start_date": "2025-02-01", "end_date": "2025-02-02"},
+    )
+
+    assert response.status_code == 200
 
 
 def test_b2b_endpoint_only_returns_b2b_records():

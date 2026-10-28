@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 from typing import Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 OperationType = Literal["income", "outcome"]
@@ -143,6 +143,14 @@ def filter_movements(
     return filtered
 
 
+def validate_date_range(start_date: date | None, end_date: date | None) -> None:
+    if start_date is not None and end_date is not None and start_date > end_date:
+        raise HTTPException(
+            status_code=422,
+            detail="start_date must be on or before end_date",
+        )
+
+
 def ensure_chronological_order(movements: list[FinancialMovement]) -> list[FinancialMovement]:
     return sorted(movements, key=lambda item: item.create_date)
 
@@ -252,6 +260,7 @@ def get_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
@@ -274,6 +283,7 @@ def get_metrics_summary(
     operation_type: OperationType | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsSummaryItem]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -292,6 +302,7 @@ def get_top_categories(
     end_date: date | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[TopCategoryItem]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -308,6 +319,7 @@ def get_metrics_comparison(
     end_date: date = Query(...),
     business_type: BusinessType | None = Query(default=None),
 ) -> MetricsComparison:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -347,6 +359,7 @@ def get_metrics_alerts(
     end_date: date | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsAlert]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -366,6 +379,7 @@ def get_b2b_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    validate_date_range(start_date, end_date)
     movements = [
         movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2B"
     ]
@@ -382,6 +396,7 @@ def get_b2c_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    validate_date_range(start_date, end_date)
     movements = [
         movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2C"
     ]

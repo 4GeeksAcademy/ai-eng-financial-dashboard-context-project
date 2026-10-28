@@ -39,7 +39,9 @@ export function computeMonthlyData(
   const monthlyMap: Record<string, { income: number; outcome: number }> = {};
 
   for (const m of movements) {
-    const yearMonthKey = toYearMonthKey(new Date(m.create_date));
+    const [year, month, day] = m.create_date.split("-").map(Number);
+    const movementDate = new Date(year, month - 1, day);
+    const yearMonthKey = toYearMonthKey(movementDate);
     if (!monthlyMap[yearMonthKey]) {
       monthlyMap[yearMonthKey] = { income: 0, outcome: 0 };
     }
