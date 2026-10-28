@@ -101,6 +101,27 @@ describe("computeMonthlyData", () => {
       profitPercent: 100,
     });
   });
+
+  it("keeps date-only first-of-month values in their UTC calendar month", () => {
+    const firstOfMarch: FinancialMovement[] = [
+      {
+        create_date: "2026-03-01",
+        amount: 1000,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+    ];
+
+    expect(computeMonthlyData(firstOfMarch)).toEqual([
+      {
+        month: "Mar 2026",
+        income: 1000,
+        outcome: 0,
+        profitPercent: 100,
+      },
+    ]);
+  });
 });
 
 describe("formatters", () => {
