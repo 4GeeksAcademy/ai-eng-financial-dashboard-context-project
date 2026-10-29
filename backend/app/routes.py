@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 from typing import Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 OperationType = Literal["income", "outcome"]
@@ -17,6 +17,14 @@ GroupBy = Literal["day", "week", "month"]
 OUTCOME_CATEGORIES = ["suppliers", "operational", "administrative", "others"]
 
 router = APIRouter()
+
+
+def validate_date_range(start_date: date | None, end_date: date | None) -> None:
+    if start_date is not None and end_date is not None and start_date > end_date:
+        raise HTTPException(
+            status_code=422,
+            detail="start_date must be less than or equal to end_date",
+        )
 
 
 class FinancialMovement(BaseModel):
@@ -31,6 +39,7 @@ class MetricsFacets(BaseModel):
     operation_types: list[OperationType]
     business_types: list[BusinessType]
     categories: list[Category]
+    categories_by_business_type: dict[BusinessType, list[Category]]
     min_date: date
     max_date: date
 
@@ -153,6 +162,14 @@ def build_metrics_facets(movements: list[FinancialMovement]) -> MetricsFacets:
         operation_types=sorted({item.operation_type for item in ordered}),
         business_types=sorted({item.business_type for item in ordered}),
         categories=sorted({item.category for item in ordered}),
+        categories_by_business_type={
+            business_type: sorted({
+                item.category
+                for item in ordered
+                if item.business_type == business_type
+            })
+            for business_type in ("B2B", "B2C")
+        },
         min_date=ordered[0].create_date,
         max_date=ordered[-1].create_date,
     )
@@ -216,27 +233,76 @@ def calculate_net_value(movements: list[FinancialMovement]) -> float:
     return round(income - outcome, 2)
 
 
+def _previous_period_keys(period: str, group_by: GroupBy) -> list[str]:
+    if group_by == "day":
+        current_date = date.fromisoformat(period)
+        return [
+            (current_date - timedelta(days=offset)).isoformat()
+            for offset in range(3, 0, -1)
+        ]
+
+    if group_by == "week":
+        iso_year, iso_week = period.split("-W")
+        current_week = date.fromisocalendar(int(iso_year), int(iso_week), 1)
+        return [
+            f"{week.isocalendar().year}-W{week.isocalendar().week:02d}"
+            for week in (
+                current_week - timedelta(weeks=offset)
+                for offset in range(3, 0, -1)
+            )
+        ]
+
+    year_text, month_text = period.split("-")
+    year = int(year_text)
+    month = int(month_text)
+    previous_months: list[str] = []
+    for _ in range(3):
+        month -= 1
+        if month == 0:
+            month = 12
+            year -= 1
+        previous_months.append(f"{year}-{month:02d}")
+    return list(reversed(previous_months))
+
+
 def detect_outcome_alerts(
     summary: list[MetricsSummaryItem],
     threshold: float,
+    baseline_summary: list[MetricsSummaryItem] | None = None,
+    group_by: GroupBy = "month",
 ) -> list[MetricsAlert]:
+    baseline_items = baseline_summary if baseline_summary is not None else summary
+    baseline_by_period = {item.period: item for item in baseline_items}
+    available_periods = sorted(baseline_by_period)
+    if not available_periods:
+        return []
+
     alerts: list[MetricsAlert] = []
-    historical_outcomes: list[float] = []
     for item in summary:
-        if historical_outcomes:
-            baseline = sum(historical_outcomes) / len(historical_outcomes)
-            if baseline > 0:
-                increase_ratio = (item.outcome - baseline) / baseline
-                if increase_ratio > threshold:
-                    alerts.append(
-                        MetricsAlert(
-                            period=item.period,
-                            outcome_total=round(item.outcome, 2),
-                            baseline_average=round(baseline, 2),
-                            increase_ratio=round(increase_ratio, 4),
-                        )
-                    )
-        historical_outcomes.append(item.outcome)
+        previous_periods = _previous_period_keys(item.period, group_by)
+        if previous_periods[0] < available_periods[0]:
+            continue
+
+        previous_outcomes = [
+            baseline_by_period[period].outcome
+            if period in baseline_by_period
+            else 0.0
+            for period in previous_periods
+        ]
+        baseline = sum(previous_outcomes) / 3
+        if baseline <= 0:
+            continue
+
+        increase_ratio = (item.outcome - baseline) / baseline
+        if increase_ratio > threshold:
+            alerts.append(
+                MetricsAlert(
+                    period=item.period,
+                    outcome_total=round(item.outcome, 2),
+                    baseline_average=round(baseline, 2),
+                    increase_ratio=round(increase_ratio, 4),
+                )
+            )
     return alerts
 
 
@@ -252,6 +318,7 @@ def get_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
@@ -274,6 +341,7 @@ def get_metrics_summary(
     operation_type: OperationType | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsSummaryItem]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -292,6 +360,7 @@ def get_top_categories(
     end_date: date | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[TopCategoryItem]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -308,6 +377,7 @@ def get_metrics_comparison(
     end_date: date = Query(...),
     business_type: BusinessType | None = Query(default=None),
 ) -> MetricsComparison:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -341,22 +411,26 @@ def get_metrics_comparison(
 
 @router.get("/api/metrics/alerts", response_model=list[MetricsAlert])
 def get_metrics_alerts(
-    threshold: float = Query(default=0.3, ge=0),
+    threshold: float = Query(default=0.3, ge=0.01, le=1.0),
     group_by: GroupBy = Query(default="month"),
     start_date: date | None = Query(default=None),
     end_date: date | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsAlert]:
+    validate_date_range(start_date, end_date)
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
             item for item in movements if item.business_type == business_type]
 
+    baseline_summary = summarize_movements(movements, group_by)
     filtered = filter_movements(
         movements, start_date, end_date, category=None, operation_type=None
     )
     summary = summarize_movements(filtered, group_by)
-    return detect_outcome_alerts(summary, threshold)
+    return detect_outcome_alerts(
+        summary, threshold, baseline_summary=baseline_summary, group_by=group_by
+    )
 
 
 @router.get("/api/metrics/b2b", response_model=list[FinancialMovement])
@@ -366,6 +440,7 @@ def get_b2b_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    validate_date_range(start_date, end_date)
     movements = [
         movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2B"
     ]
@@ -382,6 +457,7 @@ def get_b2c_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    validate_date_range(start_date, end_date)
     movements = [
         movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2C"
     ]

@@ -3,7 +3,12 @@ from datetime import date
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.routes import filter_movements_by_date, generate_mock_movements
+from app.routes import (
+    MetricsSummaryItem,
+    detect_outcome_alerts,
+    filter_movements_by_date,
+    generate_mock_movements,
+)
 
 
 client = TestClient(app)
@@ -47,6 +52,23 @@ def test_metrics_endpoint_respects_date_filters():
     payload = response.json()
     assert payload
     assert all(item["create_date"] == first_date for item in payload)
+
+
+def test_date_filtered_endpoints_reject_inverted_ranges():
+    date_range = {"start_date": "2025-03-31", "end_date": "2025-03-01"}
+    endpoints = [
+        "/api/metrics",
+        "/api/metrics/summary",
+        "/api/metrics/categories/top",
+        "/api/metrics/comparison",
+        "/api/metrics/alerts",
+        "/api/metrics/b2b",
+        "/api/metrics/b2c",
+    ]
+
+    for endpoint in endpoints:
+        response = client.get(endpoint, params=date_range)
+        assert response.status_code == 422
 
 
 def test_b2b_endpoint_only_returns_b2b_records():
@@ -115,6 +137,16 @@ def test_metrics_facets_returns_filter_options_and_date_range():
         "sales",
         "suppliers",
     ]
+    movements = generate_mock_movements(seed=42)
+    expected_categories_by_business_type = {
+        business_type: sorted({
+            item.category
+            for item in movements
+            if item.business_type == business_type
+        })
+        for business_type in ("B2B", "B2C")
+    }
+    assert payload["categories_by_business_type"] == expected_categories_by_business_type
     assert payload["min_date"] <= payload["max_date"]
 
 
@@ -187,3 +219,57 @@ def test_metrics_alerts_returns_anomaly_candidates():
             "baseline_average",
             "increase_ratio",
         }
+
+
+def test_alerts_use_three_previous_periods_from_full_history():
+    full_summary = [
+        MetricsSummaryItem(period="2025-01", income=0, outcome=1000, net=-1000),
+        MetricsSummaryItem(period="2025-02", income=0, outcome=100, net=-100),
+        MetricsSummaryItem(period="2025-03", income=0, outcome=200, net=-200),
+        MetricsSummaryItem(period="2025-04", income=0, outcome=300, net=-300),
+        MetricsSummaryItem(period="2025-05", income=0, outcome=600, net=-600),
+    ]
+
+    alerts = detect_outcome_alerts(
+        [full_summary[-1]],
+        threshold=0.3,
+        baseline_summary=full_summary,
+    )
+
+    assert len(alerts) == 1
+    assert alerts[0].period == "2025-05"
+    assert alerts[0].baseline_average == 200
+    assert alerts[0].increase_ratio == 2
+
+
+def test_alerts_skip_periods_without_three_months_of_history():
+    summary = [
+        MetricsSummaryItem(period="2025-01", income=0, outcome=100, net=-100),
+        MetricsSummaryItem(period="2025-02", income=0, outcome=100, net=-100),
+        MetricsSummaryItem(period="2025-03", income=0, outcome=1000, net=-1000),
+    ]
+
+    assert detect_outcome_alerts(summary, threshold=0.3) == []
+
+
+def test_alerts_use_three_previous_weekly_periods_when_requested():
+    summary = [
+        MetricsSummaryItem(period="2025-W01", income=0, outcome=1000, net=-1000),
+        MetricsSummaryItem(period="2025-W02", income=0, outcome=100, net=-100),
+        MetricsSummaryItem(period="2025-W03", income=0, outcome=200, net=-200),
+        MetricsSummaryItem(period="2025-W04", income=0, outcome=300, net=-300),
+        MetricsSummaryItem(period="2025-W05", income=0, outcome=600, net=-600),
+    ]
+
+    alerts = detect_outcome_alerts(summary, threshold=0.3, group_by="week")
+
+    assert alerts[-1].period == "2025-W05"
+    assert alerts[-1].baseline_average == 200
+
+
+def test_alert_threshold_is_limited_to_supported_range():
+    for threshold in (0.01, 1.0):
+        assert client.get("/api/metrics/alerts", params={"threshold": threshold}).status_code == 200
+
+    for threshold in (0.009, 1.001):
+        assert client.get("/api/metrics/alerts", params={"threshold": threshold}).status_code == 422

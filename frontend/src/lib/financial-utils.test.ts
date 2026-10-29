@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   computeKPIs,
   computeMonthlyData,
+  computeCategoryPercentages,
+  computeTotalIncome,
   formatCurrency,
   formatPercent,
 } from "./financial-utils";
@@ -61,6 +63,20 @@ describe("computeKPIs", () => {
 });
 
 describe("computeMonthlyData", () => {
+  it("keeps ISO dates on the first day in their calendar month", () => {
+    const monthlyData = computeMonthlyData([
+      {
+        create_date: "2024-03-01",
+        amount: 100,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+    ]);
+
+    expect(monthlyData[0].month).toBe("Mar 2024");
+  });
+
   it("returns chronological year-month points with aggregated totals", () => {
     const unsortedCrossYearMovements: FinancialMovement[] = [
       {
@@ -100,6 +116,26 @@ describe("computeMonthlyData", () => {
       outcome: 0,
       profitPercent: 100,
     });
+  });
+});
+
+describe("business revenue helpers", () => {
+  it("sums income across all summary periods", () => {
+    expect(
+      computeTotalIncome([
+        { period: "2024-01", income: 100, outcome: 20, net: 80 },
+        { period: "2024-02", income: 300, outcome: 50, net: 250 },
+      ]),
+    ).toBe(400);
+  });
+
+  it("computes category shares and returns zero for a zero total", () => {
+    const categories = [
+      { category: "sales" as const, operation_type: "income" as const, total_amount: 250 },
+    ];
+
+    expect(computeCategoryPercentages(categories, 1000)[0].percentage).toBe(25);
+    expect(computeCategoryPercentages(categories, 0)[0].percentage).toBe(0);
   });
 });
 

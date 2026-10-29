@@ -1,11 +1,13 @@
 import {
   type FinancialMovement,
   type KPIMetrics,
+  type MetricsSummaryItem,
   type MonthlyDataPoint,
+  type TopCategoryItem,
 } from "./financial-types";
 
-function toYearMonthKey(value: Date): string {
-  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+function toYearMonthKey(isoDate: string): string {
+  return isoDate.slice(0, 7);
 }
 
 function formatMonthYearLabel(yearMonthKey: string): string {
@@ -39,7 +41,7 @@ export function computeMonthlyData(
   const monthlyMap: Record<string, { income: number; outcome: number }> = {};
 
   for (const m of movements) {
-    const yearMonthKey = toYearMonthKey(new Date(m.create_date));
+    const yearMonthKey = toYearMonthKey(m.create_date);
     if (!monthlyMap[yearMonthKey]) {
       monthlyMap[yearMonthKey] = { income: 0, outcome: 0 };
     }
@@ -64,6 +66,20 @@ export function computeMonthlyData(
         profitPercent,
       };
     });
+}
+
+export function computeTotalIncome(summary: MetricsSummaryItem[]): number {
+  return summary.reduce((total, item) => total + item.income, 0);
+}
+
+export function computeCategoryPercentages(
+  categories: TopCategoryItem[],
+  totalIncome: number,
+): Array<TopCategoryItem & { percentage: number }> {
+  return categories.map((item) => ({
+    ...item,
+    percentage: totalIncome > 0 ? (item.total_amount / totalIncome) * 100 : 0,
+  }));
 }
 
 export function formatCurrency(value: number): string {
