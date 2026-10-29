@@ -9,6 +9,7 @@ import {
   type MonthlyDataPoint,
 } from "@/lib/financial-types";
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
+import { validateFinancialMovements } from "@/lib/financial-validation";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -17,7 +18,8 @@ async function fetchFinancialData(): Promise<FinancialMovement[]> {
   if (!response.ok) {
     throw new Error(`Failed to fetch financial data: ${response.status}`);
   }
-  return response.json();
+  const data: unknown = await response.json();
+  return validateFinancialMovements(data);
 }
 
 function App() {

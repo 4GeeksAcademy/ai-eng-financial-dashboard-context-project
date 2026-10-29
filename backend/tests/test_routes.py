@@ -3,7 +3,11 @@ from datetime import date
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.routes import filter_movements_by_date, generate_mock_movements
+from app.routes import (
+    build_metrics_facets,
+    filter_movements_by_date,
+    generate_mock_movements,
+)
 
 
 client = TestClient(app)
@@ -116,6 +120,16 @@ def test_metrics_facets_returns_filter_options_and_date_range():
         "suppliers",
     ]
     assert payload["min_date"] <= payload["max_date"]
+
+
+def test_build_metrics_facets_handles_empty_movements():
+    facets = build_metrics_facets([])
+
+    assert facets.operation_types == []
+    assert facets.business_types == []
+    assert facets.categories == []
+    assert facets.min_date is None
+    assert facets.max_date is None
 
 
 def test_metrics_summary_by_month_returns_balances():

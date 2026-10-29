@@ -42,7 +42,12 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
 docker compose up --build
 ```
 
-The frontend uses the Vite proxy for `/api` by default, so no extra environment variables are required in local development or Codespaces.
+When running with Docker Compose, the frontend proxies `/api` through Vite to `http://host.docker.internal:8000`, which reaches the backend's published host port. Compose maps `host.docker.internal` using `host-gateway`; no extra environment variables are required for this flow, including in Codespaces.
+
+This route was adopted as a workaround for an observed failure of direct communication between the frontend and backend containers; it is not a general Docker requirement. Keep the backend port `8000` published and the frontend's `extra_hosts` mapping configured.
+
+If you run Vite directly outside Docker, this hostname is not guaranteed to resolve. Set the proxy target in `frontend/vite.config.ts` to your reachable backend origin (for example, `http://localhost:8000` when both servers run locally), or set `VITE_API_BASE_URL` to an origin reachable from the browser. In Codespaces, a direct browser request may require the forwarded backend URL rather than `localhost`.
+
 If you need to target a different backend origin, copy `frontend/.env.example` to `.env` and set `VITE_API_BASE_URL`.
 
 - Frontend: http://localhost:5173

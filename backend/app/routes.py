@@ -31,8 +31,8 @@ class MetricsFacets(BaseModel):
     operation_types: list[OperationType]
     business_types: list[BusinessType]
     categories: list[Category]
-    min_date: date
-    max_date: date
+    min_date: date | None
+    max_date: date | None
 
 
 class MetricsSummaryItem(BaseModel):
@@ -153,8 +153,8 @@ def build_metrics_facets(movements: list[FinancialMovement]) -> MetricsFacets:
         operation_types=sorted({item.operation_type for item in ordered}),
         business_types=sorted({item.business_type for item in ordered}),
         categories=sorted({item.category for item in ordered}),
-        min_date=ordered[0].create_date,
-        max_date=ordered[-1].create_date,
+        min_date=ordered[0].create_date if ordered else None,
+        max_date=ordered[-1].create_date if ordered else None,
     )
 
 
