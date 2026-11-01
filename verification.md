@@ -80,4 +80,34 @@ Cómo leer la tabla: "Estado" muestra la marca inicial y la final (❌ → ✅ s
 | 49 | Tabla con 26 filas numeradas frente a las 31 pedidas | ✅ | Las 5 afirmaciones restantes están en `docs/project-summary.md`, sección «Fechas y zona horaria» | Aceptado |
 | 50 | Las 91 citas `ruta:línea` del resumen | ✅ | Script del usuario: todos los archivos existen y ninguna línea está fuera de rango ni en blanco; `frontend/src/lib/financial-utils.ts:42` contiene `toYearMonthKey(new Date(m.create_date))` | — |
 
-Las filas de las Fases 2 a 4 se añaden en el commit de cada fase.
+Las filas de las Fases 3 y 4 se añaden en el commit de cada fase.
+
+## Fase 2: hallazgos de ingeniería (docs/analysis/engineering-findings.md)
+
+## Resumen de la Fase 2
+
+- Entradas revisadas: 13
+- Afirmaciones incorrectas corregidas: 9
+- Afirmaciones sin verificar cerradas con evidencia: 2
+- Datos rebajados por falta de evidencia guardada: 1 (fila 56)
+- Afirmaciones confirmadas a la primera: 1 (fila 62)
+- Siguen sin confirmar (❓): el primer registro 2025-10-02 (fila 56), R5 en un navegador, y la ejecución de `npm run lint`, `npm run test` y `pytest`.
+
+`✅ → ❓` significa que un dato dado por bueno quedó rebajado por falta de evidencia guardada.
+
+
+| # | Afirmación del agent | Estado | Evidencia | Corrección |
+|---:|---|:---:|---|---|
+| 51 | C1 citó backend/app/routes.py:248 como `def get_metrics(` | ❌ → ✅ | `sed -n '246,251p' backend/app/routes.py` (terminal del usuario): la línea 248 es el decorador `@router.get("/api/metrics", ...)` y la 249 es `def get_metrics(` | Cita corregida a `backend/app/routes.py:249` |
+| 52 | C3 afirmó que "las rutas usan response_model" (alcance excesivo) | ❌ → ✅ | `grep -n "@router.get" backend/app/routes.py`: 9 decoradores (`backend/app/routes.py:243`, `backend/app/routes.py:248`, `backend/app/routes.py:262`, `backend/app/routes.py:268`, `backend/app/routes.py:287`, `backend/app/routes.py:305`, `backend/app/routes.py:342`, `backend/app/routes.py:362`, `backend/app/routes.py:378`); `grep -c "response_model" backend/app/routes.py`: 8 | Alcance acotado: las 8 rutas `/api/metrics*` lo declaran; `/health` (`backend/app/routes.py:243`) no |
+| 53 | C10 usó el commit propio `docs(fase-1)` como evidencia del historial | ❌ → ✅ | `git --no-pager log --format='%h %s' 624e5d4~1` (terminal del usuario): 27 commits; 3 con prefijo en minúscula (eeece05, fb7dd96, 9c3e480), 1 con `Fix:` (e267908), 22 sin prefijo y 1 merge; Copilot repitió el recuento con `git --no-pager log --oneline 954f812` | Evidencia sin el commit propio y con recuento exacto |
+| 54 | R2, R6 y R10 decían "reportada por el usuario" o "verificado por el usuario" sobre búsquedas hechas por Copilot | ❌ → ✅ | `grep -rn "mockMovements\|mock-data" frontend/src` (usuario): solo `frontend/src/lib/mock-data.ts:3`; `grep -rln "describe(\|\bit(" frontend/src` (usuario): solo `frontend/src/lib/financial-utils.test.ts`; la búsqueda de fetch/axios la hizo Copilot | Frases reescritas indicando quién hizo cada búsqueda |
+| 55 | R4 citó docs/setup-evidence.md, sección «Comprobaciones», para "primer registro 2025-10-02" | ❌ → ✅ | `grep -rn "2025-10-02" docs verification.md` (usuario): solo aparece en `verification.md`, sección «Fase 1.2 a 1.4: resumen (docs/project-summary.md)» | Dato retirado de R4; R4 se apoya en el código: `frontend/src/App.tsx:49`, `backend/app/routes.py:65` y `backend/app/routes.py:75` |
+| 56 | Fase 1, fila 37: "primer registro 2025-10-02 en ejecución" | ✅ → ❓ (solo ese dato) | No hay archivo con esa salida; la reproducción desde backend con `generate_mock_movements` falla con `ModuleNotFoundError: No module named 'fastapi'` (`backend/app/routes.py:8`, salida del usuario) | El dato queda ❓; el desajuste del encabezado sigue ✅ por el código (`backend/app/routes.py:65`, `backend/app/routes.py:75` y `frontend/src/App.tsx:49`) |
+| 57 | R2 y R6 repetían el mismo hecho (el frontend solo consume `/api/metrics`) | ❌ → ✅ | Tabla de la 2.2 de Copilot (acción: fusionar) | Fusionados en R2 |
+| 58 | 21 hallazgos, por encima del límite de 20 | ❌ → ✅ | Tabla de la 2.2: 12 se mantienen, 7 se ajustan y 2 se eliminan | C8 descartado, R6 fusionado y R12 añadido: 20 hallazgos |
+| 59 | C9 solo cubría 3 de las 4 instrucciones de AGENTS.md | ❌ → ✅ | `cat -n AGENTS.md` (usuario): 15 líneas; instrucciones en `AGENTS.md:6`, `AGENTS.md:9`, `AGENTS.md:12` (condicional, `AGENTS.md:13`) y `AGENTS.md:15` | C9 incluye las cuatro; las tres rutas no existen (`ls -a` en la raíz) |
+| 60 | R3 afirmó que "todos los endpoints" regeneran datos, sin recuento | ❓ → ✅ | `grep -n "generate_mock_movements(\|random.seed" backend/app/routes.py` (usuario): 8 llamadas con seed=42 (`backend/app/routes.py:255`, `backend/app/routes.py:264`, `backend/app/routes.py:277`, `backend/app/routes.py:295`, `backend/app/routes.py:311`, `backend/app/routes.py:350`, `backend/app/routes.py:370`, `backend/app/routes.py:386`) y un `random.seed(seed)` en `backend/app/routes.py:96` | Cuantificado: los 8 handlers de `/api/metrics*` |
+| 61 | Citas añadidas por Copilot en la 2.2 sin comprobar: `frontend/src/App.tsx:58`, `backend/app/routes.py:74`, `backend/app/routes.py:80`, `backend/app/routes.py:83`, `backend/app/routes.py:100`, `frontend/eslint.config.js:12`, `frontend/eslint.config.js:15`, `backend/app/main.py:9`, `backend/app/main.py:10`, `backend/app/main.py:11`, `backend/app/main.py:12`, `docker-compose.yml:20`, `backend/tests/test_routes.py:29`, `frontend/src/lib/financial-utils.test.ts:36` y 7 archivos con `className=` | ❓ → ✅ | Salida de los 12 comandos sed/grep/git de la terminal del usuario | Todas coinciden con lo citado |
+| 62 | R12: no hay formatter, CI ni pre-commit versionados | ✅ | `git ls-files | grep -iE "prettier\|biome\|editorconfig\|ruff\|pre-commit\|^\.github\|pyproject\|pytest\.ini\|tox\.ini"` (usuario): sin salida (grep exit=1) | Antes era C8 en ❓ (búsqueda de Copilot); solo prueba esos nombres de archivo |
+| 63 | Reglas de la 2.3 con rutas sueltas (`main.py`, `App.tsx`), un comando con comillas invertidas, una cita `frontend/src/App.tsx:40` sin verificar, una regla que mezclaba tres hallazgos, verificaciones que solo listaban coincidencias y comandos npm sin probar | ❌ → ✅ | Revisión del usuario de la respuesta de Copilot | Reglas reescritas en esta fase: 10 reglas con rutas completas, verificación con resultado esperado y npm/pytest marcados ❓ |
