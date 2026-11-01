@@ -98,4 +98,4 @@ Los comandos de verificación de P1 a P10 se ejecutaron contra el código real y
 
 ## Pendiente
 - Tarea de agente para P7.
-- Fase 4: cuando exista `memory-bank`, actualizar la verificación y la línea base de P8.
+- Fase 4: hecho; P8 se actualizó al crear `memory-bank`.

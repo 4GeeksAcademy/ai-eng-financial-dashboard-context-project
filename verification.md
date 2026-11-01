@@ -135,4 +135,14 @@ Las filas de las Fases 3 y 4 se añaden en el commit de cada fase.
 Contadores de la sección Fase 3 (calculados con grep, no a mano): 14 entradas; 6 incorrectas corregidas; 5 sin verificar cerradas con evidencia; 2 confirmadas a la primera; 1 sigue sin confirmar (fila 77).
 Siguen sin confirmar (❓): el primer registro 2025-10-02, R5 y el aviso «Error 500» en un navegador, el efecto de CORS en navegador (P7), el contenido de los assert del test de la tarea 5 y que Copilot descubra .agents/rules por AGENTS.md sin que se lo pidan (n=1).
 
-Las filas de la Fase 4 se añaden en el commit de esa fase.
+
+## Fase 4
+
+| # | Afirmación del agent | Estado | Evidencia | Corrección |
+|---|---|---|---|---|
+| 78 | Las cifras y citas de memory-bank (9 rutas GET, 15 test_ y 5 it, 3 puertos, 360 movimientos, 6 dependencias, 10 reglas y las líneas citadas de App.tsx, main.py, package.json y test_routes.py) coinciden con el código | ✅ | Script del usuario al crear los archivos: cada línea citada contiene el fragmento esperado y los recuentos coinciden, sin ninguna línea FALLA | Ninguna |
+| 79 | Prueba de arranque en frío: un agente nuevo se orienta solo con memory-bank | ❌ → ✅ | Un chat de Claude sin acceso al repo (según el prompt y sus respuestas) recibió solo los 4 archivos y 5 preguntas. Sus respuestas sobre cómo levantar y probar el proyecto, los dos riesgos de seguridad y lo no confirmado coinciden con lo escrito en memory-bank. Marcó dos huecos con sus palabras: no sabía en qué archivo está `generate_mock_movements` y solo conocía el contenido de 3 de las 10 reglas (P6, P7 y P10) | Se añadieron a `memory-bank/tech-stack.md` las secciones «Dónde está el código» e «Índice de reglas». No se repitió la prueba con el texto ampliado ❓; el chat no tenía acceso al repo, así que no probó que un agente de código llegue al memory-bank por `AGENTS.md` |
+
+## Resumen de la Fase 4
+Contadores de la sección Fase 4 (calculados con grep): 2 entradas; 1 incorrecta corregida (fila 79); 1 confirmada a la primera (fila 78).
+Siguen sin confirmar (❓): que el memory-bank ampliado cierre los dos huecos de la prueba de arranque en frío (no se repitió), el primer registro 2025-10-02, R5 y el efecto de CORS en un navegador (P7), y que un agente descubra .agents/rules por AGENTS.md sin que se lo pidan (n=1).
