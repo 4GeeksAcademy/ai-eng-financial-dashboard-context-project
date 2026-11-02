@@ -27,17 +27,25 @@ logger = logging.getLogger(__name__)
 
 
 def transform_cache_key(_ctx: Any, parameters: dict[str, Any]) -> str:
-    """Derive the cache key from the processing window.
+    """Derive the cache key from the calendar month of the window.
 
-    The window is the only input that changes the aggregation result, so it
-    fully identifies the computation. Combined with ``cache_expiration`` this
+    The aggregation result for a window depends only on which calendar months
+    the window touches, not on the exact second it was run. Keying on the month
+    range makes a re-run minutes later (same TTL hour) reuse the cache, which
     implements the ticket rule *"if a task already ran successfully in the last
-    hour, do not repeat it"*: a manual re-run of the same window inside the TTL
-    returns the cached rows instead of recomputing them.
+    hour, do not repeat it"* — the wall-clock ``window_to`` changes every run,
+    so it must not be part of the key.
     """
     window_from: datetime = parameters["window_from"]
     window_to: datetime = parameters["window_to"]
-    return f"kpi-transform:{window_from.isoformat()}|{window_to.isoformat()}"
+    months = f"{window_from.year:04d}-{window_from.month:02d}" + (
+        "+"
+        f"{window_to.year:04d}-{window_to.month:02d}"
+        if (window_to.year, window_to.month)
+        != (window_from.year, window_from.month)
+        else ""
+    )
+    return f"kpi-transform:{months}"
 
 
 @task(

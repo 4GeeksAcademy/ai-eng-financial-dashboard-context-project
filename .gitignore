@@ -27,8 +27,8 @@ frontend/yarn-error.log*
 frontend/pnpm-debug.log*
 
 # Python / backend
-backend/__pycache__/
-backend/**/*.pyc
+__pycache__/
+**/*.pyc
 backend/.pytest_cache/
 backend/.mypy_cache/
 backend/.ruff_cache/
@@ -45,3 +45,10 @@ backend/venv/
 
 # Docker
 *.tar
+
+
+# Pipeline generated artefacts (run outputs)
+data/raw/
+data/eval/*.csv
+data/eval/*.jsonl
+data/eval/*.json

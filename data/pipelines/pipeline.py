@@ -185,6 +185,82 @@ async def record_pipeline_run_finish(
 # ---------------------------------------------------------------------------
 # Flows
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Sub-flows (Prefect: a flow invoked from another flow appears as its own run
+# node, giving the orchestration graph an explicit stage structure).
+# ---------------------------------------------------------------------------
+@flow(name="resolve-run-window", log_prints=True)
+async def resolve_run_window_flow(
+    run_id: str,
+    month_start: date | str | None,
+    started_at: datetime,
+) -> tuple[date | None, datetime, datetime]:
+    """Sub-flow: resolve the processing window.
+
+    Either the requested calendar month (``month_start``) or the incremental
+    window resumed from the last successful watermark (with a short reprocess
+    lookback). Isolated as a sub-flow so the window logic is observable in the
+    Prefect run graph and reusable by the backfill flow.
+    """
+    target_month = _coerce_month(month_start)
+    if target_month is not None:
+        window_from, window_to = month_window(target_month)
+    else:
+        settings = get_settings()
+        watermark = await get_last_successful_watermark()
+        window_from, window_to = compute_window(
+            watermark,
+            started_at,
+            initial_lookback_days=INITIAL_LOOKBACK_DAYS,
+            reprocess_window_days=settings.reprocess_window_days,
+        )
+    return target_month, window_from, window_to
+
+
+@flow(name="emit-optional-artifacts", log_prints=True)
+async def emit_optional_artifacts_flow(
+    kpi_rows: list[dict[str, Any]],
+    run_id: str,
+    rows_extracted: int,
+    rows_loaded: int,
+    window_from: datetime,
+    window_to: datetime,
+) -> list[str]:
+    """Sub-flow: run the non-critical side effects (CSV export + webhook).
+
+    Both optional steps are invoked with ``return_state=True``: if one fails
+    (e.g. no webhook configured) the failure is logged and collected instead of
+    aborting the run. The caller folds the returned failures into the
+    ``partial`` run status. This is the partial-failure tolerance pattern.
+    """
+    run_logger = get_run_logger()
+    failures: list[str] = []
+
+    export_state = await export_csv_optional(kpi_rows, run_id, return_state=True)
+    if export_state.is_failed():
+        failures.append(
+            f"export_csv_optional: {export_state.result(raise_on_failure=False)}"
+        )
+        run_logger.warning("CSV export skipped — non-critical step failed")
+
+    summary = {
+        "run_id": run_id,
+        "pipeline_version": PIPELINE_VERSION,
+        "window": {"from": window_from.isoformat(), "to": window_to.isoformat()},
+        "rows_extracted": rows_extracted,
+        "rows_loaded": rows_loaded,
+        "totals_by_currency": kpi.summarise(kpi_rows),
+    }
+    notify_state = await notify_ops_optional(summary, return_state=True)
+    if notify_state.is_failed():
+        failures.append("notify_ops_optional: webhook unavailable")
+        run_logger.warning("Ops notification skipped — non-critical step failed")
+
+    return failures
+
+
+
 @flow(name=FLOW_NAME, log_prints=True)
 async def business_performance_etl_flow(
     run_id: str | None = None,
@@ -211,17 +287,10 @@ async def business_performance_etl_flow(
     resolved_run_id = run_id or str(uuid.uuid4())
     started_at = datetime.now(timezone.utc)
 
-    target_month = _coerce_month(month_start)
-    if target_month is not None:
-        window_from, window_to = month_window(target_month)
-    else:
-        watermark = await get_last_successful_watermark()
-        window_from, window_to = compute_window(
-            watermark,
-            started_at,
-            initial_lookback_days=INITIAL_LOOKBACK_DAYS,
-            reprocess_window_days=settings.reprocess_window_days,
-        )
+    # Delegate window resolution to a sub-flow (explicit graph node).
+    target_month, window_from, window_to = await resolve_run_window_flow(
+        resolved_run_id, month_start, started_at
+    )
 
     run_logger.info(
         "Run %s | version=%s | window=[%s, %s) | month=%s | skip_write=%s",
@@ -262,25 +331,16 @@ async def business_performance_etl_flow(
         else:
             rows_loaded = await load_monthly_clinic_supply_performance(kpi_rows)
 
-        # --- OPTIONAL STEP 1: CSV export --------------------------------
-        export_state = await export_csv_optional(kpi_rows, resolved_run_id, return_state=True)
-        if export_state.is_failed():
-            optional_failures.append(f"export_csv_optional: {export_state.result(raise_on_failure=False)}")
-            run_logger.warning("CSV export skipped — non-critical step failed")
-
-        # --- OPTIONAL STEP 2: ops notification --------------------------
-        summary = {
-            "run_id": resolved_run_id,
-            "pipeline_version": PIPELINE_VERSION,
-            "window": {"from": window_from.isoformat(), "to": window_to.isoformat()},
-            "rows_extracted": rows_extracted,
-            "rows_loaded": rows_loaded,
-            "totals_by_currency": kpi.summarise(kpi_rows),
-        }
-        notify_state = await notify_ops_optional(summary, return_state=True)
-        if notify_state.is_failed():
-            optional_failures.append("notify_ops_optional: webhook unavailable")
-            run_logger.warning("Ops notification skipped — non-critical step failed")
+        # --- OPTIONAL ARTIFACTS (sub-flow): CSV export + webhook ----------
+        # Partial-failure tolerance: failures here are collected, not raised.
+        optional_failures = await emit_optional_artifacts_flow(
+            kpi_rows,
+            resolved_run_id,
+            rows_extracted,
+            rows_loaded,
+            window_from,
+            window_to,
+        )
 
         # A run that wrote its rows but lost a non-critical step is "partial":
         # the data is usable, but the run deserves an operator's attention.
@@ -317,7 +377,7 @@ async def business_performance_etl_flow(
         "rows_loaded": rows_loaded,
         "error_summary": error_summary,
         "pipeline_version": PIPELINE_VERSION,
-        "totals_by_currency": summary["totals_by_currency"],
+        "totals_by_currency": kpi.summarise(kpi_rows),
     }
 
     if not skip_write:
@@ -361,7 +421,12 @@ def _coerce_month(value: date | str | None) -> date | None:
     if isinstance(value, datetime):
         value = value.date()
     if isinstance(value, str):
-        value = date.fromisoformat(value[:10])
+        # Support "YYYY-MM" and "YYYY-MM-DD" selectors.
+        parts = value[:10].split("-")
+        if len(parts) == 2:
+            value = date(int(parts[0]), int(parts[1]), 1)
+        else:
+            value = date.fromisoformat(value[:10])
     return date(value.year, value.month, 1)
 
 
