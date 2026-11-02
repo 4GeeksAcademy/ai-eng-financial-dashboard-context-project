@@ -1,0 +1,1 @@
+"""Reporting service package — thin HTTP layer over the business pipeline."""

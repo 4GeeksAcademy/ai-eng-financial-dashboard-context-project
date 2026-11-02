@@ -24,8 +24,16 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - ./backend:/app
+      # Business pipeline + reporting service (Part 2). Mounted at /repo so
+      # `data/pipelines` and `services/reporting` are importable from the API
+      # without copying them into the backend image.
+      - ./data:/repo/data
+      - ./services:/repo/services
     environment:
       - DATABASE_URL=postgresql://healthcore:healthcore_secret@host.docker.internal:5433/healthcore_telemetry
+      - PYTHONPATH=/repo
+      - PREFECT_HOME=/tmp/prefect
+      - PREFECT_SERVER_ANALYTICS_ENABLED=false
     depends_on:
       db:
         condition: service_healthy
