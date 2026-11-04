@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { DashboardHeader, type DashboardPage } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
+import { ReportingDashboard } from "@/components/reporting/reporting-dashboard";
 import { TelemetryDashboard } from "@/components/telemetry/telemetry-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -163,6 +164,8 @@ function App() {
 
           {page === "telemetry" ? (
             <TelemetryDashboard />
+          ) : page === "reporting" ? (
+            <ReportingDashboard />
           ) : (
             <>
               {error ? (

@@ -13,6 +13,10 @@ export default defineConfig({
         target: "http://host.docker.internal:8000",
         changeOrigin: true,
       },
+      "/reporting": {
+        target: "http://host.docker.internal:8000",
+        changeOrigin: true,
+      },
     },
   },
   resolve: {

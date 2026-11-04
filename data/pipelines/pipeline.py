@@ -187,9 +187,43 @@ async def record_pipeline_run_finish(
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# Sub-flows (Prefect: a flow invoked from another flow appears as its own run
-# node, giving the orchestration graph an explicit stage structure).
+# Sub-flows — ETL phases (Part 3 requirement: each phase is an independent
+# sub-flow with explicit I/O, testable and reusable).
 # ---------------------------------------------------------------------------
+@flow(name="extract-telemetry-subflow", log_prints=True)
+async def extract_telemetry_subflow(
+    watermark_from: datetime,
+    watermark_to: datetime,
+    dsn: str | None = None,
+) -> list[dict[str, Any]]:
+    """Sub-flow: extract source telemetry events for the window (read-only)."""
+    return await extract_telemetry_events(watermark_from, watermark_to, dsn=dsn)
+
+
+@flow(name="transform-business-kpis-subflow", log_prints=True)
+async def transform_business_kpis_subflow(
+    rows: list[dict[str, Any]],
+    window_from: datetime,
+    window_to: datetime,
+) -> list[dict[str, Any]]:
+    """Sub-flow: transform extracted events into clinic-month KPI rows.
+
+    The heavy lifting is delegated to data/process/kpi_aggregation.py
+    which is a pure module with no Prefect dependency — this sub-flow only
+    wraps the task so the orchestration graph shows an explicit stage.
+    """
+    return transform_business_kpis(rows, window_from, window_to)
+
+
+@flow(name="load-monthly-clinic-supply-subflow", log_prints=True)
+async def load_monthly_clinic_supply_subflow(
+    rows: list[dict[str, Any]],
+    dsn: str | None = None,
+) -> int:
+    """Sub-flow: idempotent upsert of KPI rows into the reporting table."""
+    return await load_monthly_clinic_supply_performance(rows, dsn=dsn)
+
+
 @flow(name="resolve-run-window", log_prints=True)
 async def resolve_run_window_flow(
     run_id: str,
@@ -316,20 +350,20 @@ async def business_performance_etl_flow(
 
     try:
         # --- EXTRACT -----------------------------------------------------
-        events = await extract_telemetry_events(window_from, window_to)
+        # --- EXTRACT SUB-FLOW ------------------------------------------------
+        events = await extract_telemetry_subflow(window_from, window_to)
         rows_extracted = len(events)
         run_logger.info("Extracted %d source event(s)", rows_extracted)
 
-        # --- TRANSFORM (cached for 1h per window) ------------------------
-        # Sync Prefect task -> returns the cached/computed rows directly.
-        kpi_rows = transform_business_kpis(events, window_from, window_to)
+        # --- TRANSFORM SUB-FLOW (cached for 1h per window) ---------------
+        kpi_rows = await transform_business_kpis_subflow(events, window_from, window_to)
         run_logger.info("Produced %d clinic-month row(s)", len(kpi_rows))
 
-        # --- LOAD (idempotent upsert) ------------------------------------
+        # --- LOAD SUB-FLOW (idempotent upsert) ---------------------------
         if skip_write:
             run_logger.warning("skip_write=True — load stage skipped (dry run)")
         else:
-            rows_loaded = await load_monthly_clinic_supply_performance(kpi_rows)
+            rows_loaded = await load_monthly_clinic_supply_subflow(kpi_rows)
 
         # --- OPTIONAL ARTIFACTS (sub-flow): CSV export + webhook ----------
         # Partial-failure tolerance: failures here are collected, not raised.

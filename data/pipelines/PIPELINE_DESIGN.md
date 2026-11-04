@@ -3,7 +3,7 @@
 > **Company:** HealthCore  
 > **Pipeline:** Business Performance Pipeline (v1)  
 > **Design Date:** 2026-10-31  
-> **Status:** Design — Implementation in Parts 2 & 3  
+> **Status:** Implemented — Part 2 (pipeline) + Part 3 (subflows, tests, dashboard)  
 
 ---
 
@@ -363,3 +363,44 @@ CREATE TABLE IF NOT EXISTS reporting.pipeline_runs (
 | ≥3 `services/reporting/` endpoints naming `data/pipelines/` functions | Section 8 |
 | Coherent with existing telemetry events and mandatory metrics | Sections 1, 2 |
 | Commit message: `feat: add business performance pipeline design document` | Next commit |
+
+## 11. Part 3 Enhancements — Subflows, Tests & Dashboard
+
+### 11.1 Subflow Refactoring
+
+The original monolithic flow was split into **three independent subflows** (`@flow`), one per ETL phase:
+
+| Subflow | Responsibility | Invoked by |
+|---|---|---|
+| `extract-telemetry-subflow` | Read source events from telemetry_events | `business_performance_etl_flow` |
+| `transform-business-kpis-subflow` | Aggregate events into clinic-month KPIs | `business_performance_etl_flow` |
+| `load-monthly-clinic-supply-subflow` | Idempotent upsert into reporting table | `business_performance_etl_flow` |
+| `resolve-run-window` | Compute processing window | `business_performance_etl_flow` |
+| `emit-optional-artifacts` | Non-critical side effects (CSV, webhook) | `business_performance_etl_flow` |
+
+Subflows communicate through return values, not globals. Each is independently executable.
+
+### 11.2 Unit Tests
+
+Location: `tests/pipelines/test_pipeline.py` — 10 tests, all in-memory (no DB):
+
+- 5 KPI transform tests (cost, consumption, stockout, expiry, multi-clinic)
+- 3 defensive tests (unknown type, null timestamp, missing clinic)
+- 1 hand-calculated test against BRIEFING definitions (all 4 KPIs)
+- 1 stats smoke test
+
+### 11.3 Business Dashboard
+
+New frontend tab (`Reporting`) that fetches from `/reporting/monthly-clinic-supply-performance` and displays all four BRIEFING KPIs with stakeholder-friendly labels.
+
+### 11.4 Execution
+
+```bash
+# Run pipeline
+python data/pipelines/pipeline.py
+python data/pipelines/pipeline.py --month 2026-06
+python data/pipelines/pipeline.py --dry-run
+
+# Run tests
+python -m pytest tests/pipelines/test_pipeline.py -v
+```
