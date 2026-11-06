@@ -1,10 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   computeKPIs,
   computeMonthlyData,
   formatCurrency,
   formatPercent,
+  formatPeriodRange,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -61,6 +62,34 @@ describe("computeKPIs", () => {
 });
 
 describe("computeMonthlyData", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("keeps a date on the 1st in its own month in timezones behind UTC", () => {
+    vi.stubEnv("TZ", "America/Santiago");
+    const movements: FinancialMovement[] = [
+      {
+        create_date: "2026-03-01",
+        amount: 100,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+      {
+        create_date: "2026-03-15",
+        amount: 40,
+        operation_type: "outcome",
+        category: "operational",
+        business_type: "B2B",
+      },
+    ];
+
+    expect(computeMonthlyData(movements)).toEqual([
+      { month: "Mar 2026", income: 100, outcome: 40, profitPercent: 60 },
+    ]);
+  });
+
   it("returns chronological year-month points with aggregated totals", () => {
     const unsortedCrossYearMovements: FinancialMovement[] = [
       {
@@ -104,6 +133,28 @@ describe("computeMonthlyData", () => {
 });
 
 describe("formatters", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("formats a period range from its first and last month", () => {
+    expect(formatPeriodRange("2025-11-15", "2026-10-28")).toBe(
+      "Nov 2025 - Oct 2026",
+    );
+  });
+
+  it("keeps a period starting on the 1st in timezones behind UTC", () => {
+    vi.stubEnv("TZ", "America/Santiago");
+
+    expect(formatPeriodRange("2025-11-01", "2026-10-01")).toBe(
+      "Nov 2025 - Oct 2026",
+    );
+  });
+
+  it("formats a period within one month as a single label", () => {
+    expect(formatPeriodRange("2026-03-01", "2026-03-28")).toBe("Mar 2026");
+  });
+
   it("formats currency without decimals", () => {
     expect(formatCurrency(1234.56)).toBe("$1,235");
   });

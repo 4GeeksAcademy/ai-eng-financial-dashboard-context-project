@@ -1,5 +1,6 @@
-from datetime import date
+from datetime import date, timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -7,6 +8,17 @@ from app.routes import filter_movements_by_date, generate_mock_movements
 
 
 client = TestClient(app)
+
+
+def _net(movements):
+    return sum(
+        item.amount if item.operation_type == "income" else -item.amount
+        for item in movements
+    )
+
+
+def _in_range(movements, start, end):
+    return [item for item in movements if start <= item.create_date <= end]
 
 
 def test_generate_mock_movements_returns_full_year_sorted_data():
@@ -187,3 +199,117 @@ def test_metrics_alerts_returns_anomaly_candidates():
             "baseline_average",
             "increase_ratio",
         }
+
+
+def test_metrics_summary_by_day_totals_each_date():
+    movements = generate_mock_movements(seed=42)
+
+    response = client.get("/api/metrics/summary", params={"group_by": "day"})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert [item["period"] for item in payload] == sorted(
+        {item.create_date.isoformat() for item in movements}
+    )
+    for item in payload:
+        day = date.fromisoformat(item["period"])
+        assert item["net"] == pytest.approx(
+            _net(_in_range(movements, day, day)), abs=0.01
+        )
+
+
+def test_top_categories_honors_business_type_filter():
+    b2c_outcomes = [
+        item
+        for item in generate_mock_movements(seed=42)
+        if item.business_type == "B2C" and item.operation_type == "outcome"
+    ]
+    expected = {}
+    for item in b2c_outcomes:
+        expected[item.category] = expected.get(item.category, 0) + item.amount
+
+    response = client.get(
+        "/api/metrics/categories/top",
+        params={"operation_type": "outcome", "business_type": "B2C"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert {item["category"] for item in payload} == set(expected)
+    for item in payload:
+        assert item["total_amount"] == pytest.approx(
+            expected[item["category"]], abs=0.01
+        )
+
+
+def test_metrics_comparison_calculates_net_and_delta_for_business_type():
+    b2b = [
+        item
+        for item in generate_mock_movements(seed=42)
+        if item.business_type == "B2B"
+    ]
+    end = max(item.create_date for item in b2b)
+    start = end - timedelta(days=59)
+    previous_end = start - timedelta(days=1)
+    previous_start = previous_end - timedelta(days=59)
+    current = _net(_in_range(b2b, start, end))
+    previous = _net(_in_range(b2b, previous_start, previous_end))
+    assert previous != 0
+
+    response = client.get(
+        "/api/metrics/comparison",
+        params={
+            "start_date": start.isoformat(),
+            "end_date": end.isoformat(),
+            "business_type": "B2B",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["current_period"] == pytest.approx(current, abs=0.01)
+    assert payload["previous_period"] == pytest.approx(previous, abs=0.01)
+    assert payload["delta_abs"] == pytest.approx(current - previous, abs=0.01)
+    assert payload["delta_pct"] == pytest.approx(
+        (current - previous) / abs(previous) * 100, abs=0.01
+    )
+
+
+def test_metrics_alerts_honors_business_type_and_threshold():
+    monthly_outcome = {}
+    for item in generate_mock_movements(seed=42):
+        key = item.create_date.strftime("%Y-%m")
+        monthly_outcome.setdefault(key, 0)
+        if item.business_type == "B2C" and item.operation_type == "outcome":
+            monthly_outcome[key] += item.amount
+    expected = []
+    earlier = []
+    for period in sorted(monthly_outcome):
+        outcome = monthly_outcome[period]
+        if earlier and outcome > (sum(earlier) / len(earlier)) * 1.1:
+            expected.append(period)
+        earlier.append(outcome)
+    assert expected
+
+    response = client.get(
+        "/api/metrics/alerts",
+        params={"threshold": 0.1, "business_type": "B2C"},
+    )
+
+    assert response.status_code == 200
+    assert [item["period"] for item in response.json()] == expected
+
+
+@pytest.mark.parametrize(
+    ("path", "params"),
+    [
+        ("/api/metrics", {"category": "unknown"}),
+        ("/api/metrics/summary", {"group_by": "year"}),
+        ("/api/metrics/categories/top", {"limit": 0}),
+        ("/api/metrics/categories/top", {"limit": 21}),
+        ("/api/metrics/comparison", {}),
+        ("/api/metrics/alerts", {"threshold": -1}),
+    ],
+)
+def test_invalid_query_parameters_return_422(path, params):
+    assert client.get(path, params=params).status_code == 422
