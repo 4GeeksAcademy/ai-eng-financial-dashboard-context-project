@@ -5,6 +5,10 @@ is tied to a file or an observed behavior. Line numbers are from commit `5bee479
 
 **Type:** Convention (follow it) · Risk (be careful, or fix it)
 
+This is a snapshot, so it is not updated as issues are fixed. Since it was written,
+F1 was fixed in `840e6f2` and T3 in `22db46d`. The current list of open gaps is in
+`memory-bank/current-state.md`.
+
 ## Architecture
 
 | ID | Type | Finding | Evidence | Why it matters |

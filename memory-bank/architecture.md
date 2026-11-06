@@ -2,12 +2,13 @@
 
 ## Services
 
-`docker-compose.yml` defines two services and no database.
+`docker-compose.yml` defines two services and no database. Versions are in
+`tech-stack.md`.
 
-| Service | Stack | Ports | Started with |
-|---|---|---|---|
-| `frontend` | Node 24, Vite 8, React 19, TypeScript 6, Tailwind 4, Recharts 3 | 5173 | `npm run dev` |
-| `backend` | Python 3.13, FastAPI, Uvicorn with `--reload` | 8000 (API), 5678 (debugpy) | `python -m debugpy ... uvicorn app.main:app` |
+| Service | Ports | Started with |
+|---|---|---|
+| `frontend` | 5173 | `npm run dev` |
+| `backend` | 8000 (API), 5678 (debugpy) | `python -m debugpy ... uvicorn app.main:app` |
 
 debugpy listens on 5678 and does not wait for a client, so the API starts without
 a debugger attached.
