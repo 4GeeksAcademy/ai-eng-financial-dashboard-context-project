@@ -48,12 +48,10 @@ None of these are fixed. Fix them only when asked.
 
 **Small fixes**
 
-- **Page title:** `frontend/index.html` still says `frontend`.
 - **Mixed UI language:** the error in `App.tsx` is in Spanish, and misspells
   "información". The rest of the UI is in English.
 - **Lost error detail:** `App.tsx` discards the cause of a failed fetch.
 - **Unused data:** nothing imports `frontend/src/lib/mock-data.ts`.
-- **README:** neither version says that `.env` belongs in `frontend/`.
 - **Bundle size:** the production chunk is 584 kB.
 
 **Not wired up**
@@ -65,7 +63,6 @@ The UI does not use the `b2b`, `b2c`, `summary`, `categories/top`, `comparison` 
 
 - Attaching a debugger to port 5678 and stopping at a breakpoint.
 - Pointing the frontend at another backend with `VITE_API_BASE_URL`.
-- Running the project in GitHub Codespaces.
 - The empty and error states in a browser.
 
 See `verification.md` and `docs/rule-validation.md` for details.
