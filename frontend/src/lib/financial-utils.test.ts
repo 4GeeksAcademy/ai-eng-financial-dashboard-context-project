@@ -5,6 +5,7 @@ import {
   computeMonthlyData,
   formatCurrency,
   formatPercent,
+  formatPeriodRange,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -132,6 +133,28 @@ describe("computeMonthlyData", () => {
 });
 
 describe("formatters", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("formats a period range from its first and last month", () => {
+    expect(formatPeriodRange("2025-11-15", "2026-10-28")).toBe(
+      "Nov 2025 - Oct 2026",
+    );
+  });
+
+  it("keeps a period starting on the 1st in timezones behind UTC", () => {
+    vi.stubEnv("TZ", "America/Santiago");
+
+    expect(formatPeriodRange("2025-11-01", "2026-10-01")).toBe(
+      "Nov 2025 - Oct 2026",
+    );
+  });
+
+  it("formats a period within one month as a single label", () => {
+    expect(formatPeriodRange("2026-03-01", "2026-03-28")).toBe("Mar 2026");
+  });
+
   it("formats currency without decimals", () => {
     expect(formatCurrency(1234.56)).toBe("$1,235");
   });

@@ -51,4 +51,5 @@ All routes are `GET` and are defined in `backend/app/routes.py`.
 | `/api/metrics/comparison` | Net for the period and for the previous period of equal length | `start_date` and `end_date` (required), `business_type` |
 | `/api/metrics/alerts` | Periods whose outcome exceeds the average of all earlier periods by more than `threshold` | `threshold` (default 0.3), `group_by`, `start_date`, `end_date`, `business_type` |
 
-Only `/api/metrics` is used by the frontend today.
+The frontend uses `/api/metrics` for its data and `/api/metrics/facets` for the
+period label in the header. The other routes are not used by the UI today.

@@ -18,12 +18,6 @@ All of these were run inside the containers:
 
 None of these are fixed yet. Fix them only when asked.
 
-### The period label is wrong
-
-`App.tsx` passes `period="2024 - Full Year"` to `DashboardHeader`, but the data
-covers the last 12 full months (`2025-11-01` to `2026-10-28` when verified). The
-component also has its own hardcoded default.
-
 ### Smaller issues
 
 - **Unused data:** nothing imports `frontend/src/lib/mock-data.ts`.
@@ -41,7 +35,7 @@ component also has its own hardcoded default.
 
 ## Not wired up yet
 
-The backend has endpoints the UI does not use: `b2b`, `b2c`, `facets`, `summary`,
+The backend has endpoints the UI does not use: `b2b`, `b2c`, `summary`,
 `categories/top`, `comparison` and `alerts`. The UI has no filters or date
 selection, and it calculates its monthly data in the browser even though
 `/api/metrics/summary` exists.

@@ -63,6 +63,12 @@ export function computeMonthlyData(
     });
 }
 
+export function formatPeriodRange(minDate: string, maxDate: string): string {
+  const start = formatMonthYearLabel(minDate.slice(0, 7));
+  const end = formatMonthYearLabel(maxDate.slice(0, 7));
+  return start === end ? start : `${start} - ${end}`;
+}
+
 export function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

@@ -10,6 +10,14 @@ export interface FinancialMovement {
   business_type: BusinessType
 }
 
+export interface MetricsFacets {
+  operation_types: OperationType[]
+  business_types: BusinessType[]
+  categories: Category[]
+  min_date: string // ISO date
+  max_date: string // ISO date
+}
+
 export interface KPIMetrics {
   totalIncome: number
   totalOutcome: number
