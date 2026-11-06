@@ -44,19 +44,18 @@ with `docker compose up --build`.
 | 12 | Backend tests, frontend tests, lint and build pass | ✅ | Ran inside the containers | |
 | 13 | Port 5678 accepts connections for debugpy | ✅ | Connected to the port from the host | |
 | 14 | The header shows the period of the data | ✅ | Was ❌ with a hardcoded "2024 - Full Year". Now reads `/api/metrics/facets`; Chrome shows `Nov 2025 - Oct 2026` | |
-| 15 | Monthly totals are right in every timezone | ❌ | Wrong behind UTC. Corrected in commit `5bee479` | |
-| 16 | `AGENTS.md` points to existing folders | ❌ | `.agents/` and `memory-bank/` were missing. Corrected in commit `2cd0e1e` | |
-| 17 | The README says where `.env` goes | ❌ | "Copy to `.env`" gives no folder, and Vite only reads `frontend/` | |
-| 18 | The page title names the product | ❌ | `index.html` has `<title>frontend</title>` | |
+| 15 | Monthly totals are right in every timezone | ✅ | Wrong behind UTC. Corrected in commit `5bee479` | |
+| 16 | `AGENTS.md` points to existing folders | ✅ | `.agents/` and `memory-bank/` were missing. Corrected in commit `2cd0e1e` | |
+| 17 | The README says where `.env` goes | ✅ | Was ❌: "copy to `.env`" gave no folder, and Vite only reads `frontend/`. Both READMEs now say `frontend/.env` | Todo OK |
+| 18 | The page title names the product | ✅ | Was ❌ with `<title>frontend</title>`. Now "Financial Metrics Dashboard", the name in the README; read from the page in Chrome | Todo OK |
 | 19 | A debugger can attach and stop at a breakpoint | ❓ | The port is open, but no debug session was tried | |
 | 20 | `VITE_API_BASE_URL` points the frontend at another backend | ❓ | Read the code in `App.tsx`, but did not try it | |
-| 21 | The project runs in GitHub Codespaces | ❓ | The README says so, but it was only run on macOS | |
+| 21 | The project runs in GitHub Codespaces | ✅ | Was ❓: the agent only ran it on macOS. Confirmed by the human reviewer | Verificado en Codespaces |
 | 22 | The page renders correctly in a browser | ✅ | Headless Chrome with the `America/Santiago` timezone: KPIs, both charts with full lines, 12 months, and the loading state | |
 
 ## Mismatches to resolve
 
-- **#17 and #18:** tracked in `memory-bank/current-state.md`.
-- **#19 to #21:** still need a real check. Do not state them as facts until then.
+- **#19 and #20:** still need a real check. Do not state them as facts until then.
 
 ## Reviewer steps
 
