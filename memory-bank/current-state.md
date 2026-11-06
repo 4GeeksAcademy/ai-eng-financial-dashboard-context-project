@@ -10,29 +10,13 @@ All of these were run inside the containers:
 | Check | Result |
 |---|---|
 | Backend tests | 15 passed, 97% coverage of `app/` |
-| Frontend tests | 5 passed |
+| Frontend tests | 6 passed |
 | Lint | No errors |
 | Build, including type check | Succeeds, with a warning about a 584 kB chunk |
 
 ## Known issues
 
 None of these are fixed yet. Fix them only when asked.
-
-### Monthly totals are wrong in timezones behind UTC
-
-`computeMonthlyData` in `frontend/src/lib/financial-utils.ts` uses
-`new Date(m.create_date)` with local getters, so a date on the 1st of a month
-counts toward the previous month.
-
-With `TZ=America/Santiago` the current data produces 13 points instead of 12,
-including an extra `Oct 2025` point with $5,466 of income and a 100% margin. All
-16 movements dated on the 1st are affected. UTC and `Europe/Madrid` are correct.
-
-The tests miss it because containers run in UTC and no test covers a date on the
-1st through `computeMonthlyData`.
-
-Likely fix: take the key from the string with `m.create_date.slice(0, 7)`, and
-add a test with a date on the 1st.
 
 ### The period label is wrong
 

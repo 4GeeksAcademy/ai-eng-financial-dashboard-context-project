@@ -55,6 +55,6 @@ Components that show API data take `loading` and render three states:
   Node environment.
 - Component tests are not set up: `jsdom` and Testing Library are not installed.
   Test logic through `src/lib/`, and ask before adding those dependencies.
-- Containers run in UTC, which hides timezone bugs. For date logic, also run the
-  tests with a negative offset, as shown in the
-  [verify-changes](../skills/verify-changes/SKILL.md) skill.
+- Containers run in UTC, which hides timezone bugs. For date logic, add a test
+  with a date on the 1st of a month that sets its own timezone with
+  `vi.stubEnv("TZ", "America/Santiago")`, as `financial-utils.test.ts` does.

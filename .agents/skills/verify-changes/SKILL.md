@@ -41,9 +41,8 @@ is ignored by git.
 docker compose exec -T -e TZ=America/Santiago frontend npm test
 ```
 
-This only helps if the tests use dates on the 1st of a month. The current suite
-passes in this timezone despite the known bug in `memory-bank/current-state.md`,
-so add such a date to any test you write for date logic.
+This only helps if the tests use dates on the 1st of a month, so add such a date
+to any test you write for date logic.
 
 **Changes on both sides:** run all of the above.
 
