@@ -30,12 +30,12 @@ with `docker compose up --build`.
 
 | # | Claim | Result | How it was checked | Your check |
 |---|---|---|---|---|
-| 1 | `docker-compose.yml` defines exactly two services | ✅ | Read the file; `docker compose ps` lists `backend` and `frontend` | |
-| 2 | The frontend is served on port 5173 | ✅ | `curl localhost:5173/` returns 200 HTML | |
-| 3 | The API and its docs are served on port 8000 | ✅ | `/health` and `/docs` return 200 | |
-| 4 | `index.html` loads `main.tsx`, which mounts `App` | ✅ | Read both files | |
-| 5 | The frontend reaches the backend through the Vite proxy | ✅ | `localhost:5173/api/metrics` returns 360 movements | |
-| 6 | Only `/api` is proxied | ✅ | `vite.config.ts`; `localhost:5173/health` returns HTML, not JSON | |
+| 1 | `docker-compose.yml` defines exactly two services | ✅ | Read the file; `docker compose ps` lists `backend` and `frontend` | OK |
+| 2 | The frontend is served on port 5173 | ✅ | `curl localhost:5173/` returns 200 HTML | OK |
+| 3 | The API and its docs are served on port 8000 | ✅ | `/health` and `/docs` return 200 | OK |
+| 4 | `index.html` loads `main.tsx`, which mounts `App` | ✅ | Read both files | OK |
+| 5 | The frontend reaches the backend through the Vite proxy | ✅ | `localhost:5173/api/metrics` returns 360 movements | OK |
+| 6 | Only `/api` is proxied | ✅ | `vite.config.ts`; `localhost:5173/health` returns HTML, not JSON | OK |
 | 7 | There is no database | ✅ | Compose has no database service; `routes.py` persists nothing | |
 | 8 | Data is simulated and repeats between requests | ✅ | Two `/api/metrics` responses have the same hash | |
 | 9 | Data covers the 12 full months before today | ✅ | `/api/metrics/facets`: `2025-11-01` to `2026-10-28`, checked on 2026-11-05 | |
