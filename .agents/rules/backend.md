@@ -1,6 +1,11 @@
 # Backend
 
-Applies to `backend/`. Stack: FastAPI on Python 3.13, with Pydantic models.
+**Scope:** `backend/`. Stack: FastAPI on Python 3.13, with Pydantic models.
+
+**Why:** all 8 data handlers in `routes.py` share the same generated data and the
+same helpers, so a stray seed or duplicated calculation makes endpoints disagree.
+Tests like `test_metrics_comparison_returns_delta_fields` only check keys, so
+wrong numbers can pass unnoticed.
 
 ## Structure
 
@@ -32,4 +37,8 @@ Applies to `backend/`. Stack: FastAPI on Python 3.13, with Pydantic models.
 
 - Tests live in `backend/tests/test_routes.py` and use `TestClient`.
 - Add a test for each new route or helper. Assert on calculated values, not only
-  on the status code and response keys.
+  on the status code and response keys. Work out the expected value in the test,
+  independently of the helper, as `test_metrics_comparison_calculates_net_and_delta_for_business_type`
+  does.
+- Derive test dates from the generated data, and make sure any assumption about
+  the data, such as "at least one alert exists", holds in every month of the year.

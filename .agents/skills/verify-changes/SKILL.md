@@ -59,6 +59,10 @@ inspect the response.
 For visual changes, open http://localhost:5173 and check the loading, empty and
 data states. If you could not view the page, say so.
 
+If you use headless Chrome, do not rely on `--virtual-time-budget`: it freezes the
+chart animation, so the lines look missing when they are fine. Wait in real time.
+Using `--timeout` alone can capture the loading state instead of the data.
+
 ## 4. Report
 
 State what you ran and the result of each check. Expected noise that is not a

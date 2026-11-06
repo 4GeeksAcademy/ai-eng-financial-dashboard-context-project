@@ -1,6 +1,10 @@
 # Workflow
 
-Applies to every task in this repository.
+**Scope:** every task in this repository.
+
+**Why:** the app only works as a whole on the Compose network, because the Vite
+proxy targets `http://backend:8000`. No CI exists (there is no `.github/` folder),
+so a contributor's own checks are the only checks.
 
 ## Run everything through Docker Compose
 
@@ -38,6 +42,9 @@ real results, including failures and anything you skipped.
   `memory-bank/current-state.md` instead of fixing them on the way.
 - Do not commit, push or open a PR unless asked. If asked while on `main`,
   branch first.
+- Keep one concern per commit, and use a type prefix as recent commits do: `feat:`,
+  `fix:`, `test:` or `docs:`. Commit `2cd0e1e` mixed rules and memory bank, which
+  made it harder to review each one on its own.
 - Never commit `.env` files. Only `frontend/.env.example` is tracked.
 
 ## Keep the docs true

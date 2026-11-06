@@ -1,6 +1,10 @@
 # API contract
 
-Applies to any change that crosses the frontend and backend boundary.
+**Scope:** any change that crosses the frontend and backend boundary.
+
+**Why:** types are copied by hand between `routes.py` and `financial-types.ts`,
+and `response.json()` in `App.tsx` is not validated. A mismatch passes the build
+and only shows up at runtime.
 
 ## Keep both sides in sync
 
@@ -11,6 +15,7 @@ at build time. Change these together, in the same piece of work:
 |---|---|
 | `OperationType`, `Category`, `BusinessType` | Types with the same names |
 | `FinancialMovement` | `FinancialMovement` |
+| `MetricsFacets` | `MetricsFacets` |
 
 - API fields use `snake_case`, such as `create_date` and `operation_type`.
 - Types derived in the frontend use `camelCase`, such as `totalIncome`.

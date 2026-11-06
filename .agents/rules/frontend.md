@@ -1,7 +1,12 @@
 # Frontend
 
-Applies to `frontend/`. Stack: React 19, TypeScript, Vite, Tailwind CSS 4,
+**Scope:** `frontend/`. Stack: React 19, TypeScript, Vite, Tailwind CSS 4,
 Recharts, and shadcn/ui-style components.
+
+**Why:** only `src/lib/` can be tested today, because no component test setup
+exists. Date handling has already caused a real bug: `new Date(create_date)` in
+`computeMonthlyData` added a false month to the charts behind UTC (fixed in
+`5bee479`).
 
 ## Structure
 
@@ -27,7 +32,8 @@ Components that show API data take `loading` and render three states:
 2. **Empty:** a clear message, as in the charts' "No data available to display".
 3. **Data:** the content itself.
 
-`App.tsx` owns the error state.
+`App.tsx` owns the error state. Data that is only decorative should not block the
+page: if the facets request fails, the header simply omits its period label.
 
 ## Styling
 
