@@ -1,0 +1,10 @@
+{
+  "name": "financial-dashboard-memory-bank",
+  "private": true,
+  "description": "Forward frontend checks from the memory-bank directory without duplicating dependencies.",
+  "scripts": {
+    "test": "npm --prefix ../frontend test --",
+    "build": "npm --prefix ../frontend run build --",
+    "lint": "npm --prefix ../frontend run lint --"
+  }
+}
