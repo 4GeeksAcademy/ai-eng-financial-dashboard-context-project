@@ -8,6 +8,8 @@ from typing import Literal
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
+from app.core.cache import cache_get, cache_set
+
 OperationType = Literal["income", "outcome"]
 Category = Literal["suppliers", "sales",
                    "operational", "administrative", "others"]
@@ -252,17 +254,31 @@ def get_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    cache_key = (
+        f"metrics:{start_date}:{end_date}:{category}:{operation_type}"
+    )
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     movements = generate_mock_movements(seed=42)
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )
-    return ensure_chronological_order(filtered)
+    result = ensure_chronological_order(filtered)
+    cache_set(cache_key, result, ttl_seconds=30)
+    return result
 
 
 @router.get("/api/metrics/facets", response_model=MetricsFacets)
 def get_metrics_facets() -> MetricsFacets:
+    cache_key = "metrics:facets"
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     movements = generate_mock_movements(seed=42)
-    return build_metrics_facets(movements)
+    result = build_metrics_facets(movements)
+    cache_set(cache_key, result, ttl_seconds=60)
+    return result
 
 
 @router.get("/api/metrics/summary", response_model=list[MetricsSummaryItem])
@@ -274,6 +290,13 @@ def get_metrics_summary(
     operation_type: OperationType | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsSummaryItem]:
+    cache_key = (
+        f"metrics:summary:{group_by}:{start_date}:"
+        f"{end_date}:{category}:{operation_type}:{business_type}"
+    )
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -281,7 +304,9 @@ def get_metrics_summary(
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )
-    return summarize_movements(filtered, group_by)
+    result = summarize_movements(filtered, group_by)
+    cache_set(cache_key, result, ttl_seconds=30)
+    return result
 
 
 @router.get("/api/metrics/categories/top", response_model=list[TopCategoryItem])
@@ -292,6 +317,13 @@ def get_top_categories(
     end_date: date | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[TopCategoryItem]:
+    cache_key = (
+        f"metrics:topcats:{operation_type}:{limit}:"
+        f"{start_date}:{end_date}:{business_type}"
+    )
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -299,7 +331,9 @@ def get_top_categories(
     filtered = filter_movements(
         movements, start_date, end_date, category=None, operation_type=operation_type
     )
-    return build_top_categories(filtered, operation_type, limit)
+    result = build_top_categories(filtered, operation_type, limit)
+    cache_set(cache_key, result, ttl_seconds=30)
+    return result
 
 
 @router.get("/api/metrics/comparison", response_model=MetricsComparison)
@@ -308,6 +342,11 @@ def get_metrics_comparison(
     end_date: date = Query(...),
     business_type: BusinessType | None = Query(default=None),
 ) -> MetricsComparison:
+    cache_key = f"metrics:comparison:{start_date}:{end_date}:{business_type}"
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
+
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -331,12 +370,14 @@ def get_metrics_comparison(
     if previous_net != 0:
         delta_pct = round((delta_abs / abs(previous_net)) * 100, 2)
 
-    return MetricsComparison(
+    result = MetricsComparison(
         current_period=current_net,
         previous_period=previous_net,
         delta_abs=delta_abs,
         delta_pct=delta_pct,
     )
+    cache_set(cache_key, result, ttl_seconds=60)
+    return result
 
 
 @router.get("/api/metrics/alerts", response_model=list[MetricsAlert])
@@ -347,6 +388,13 @@ def get_metrics_alerts(
     end_date: date | None = Query(default=None),
     business_type: BusinessType | None = Query(default=None),
 ) -> list[MetricsAlert]:
+    cache_key = (
+        f"metrics:alerts:{threshold}:{group_by}:"
+        f"{start_date}:{end_date}:{business_type}"
+    )
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     movements = generate_mock_movements(seed=42)
     if business_type is not None:
         movements = [
@@ -356,7 +404,9 @@ def get_metrics_alerts(
         movements, start_date, end_date, category=None, operation_type=None
     )
     summary = summarize_movements(filtered, group_by)
-    return detect_outcome_alerts(summary, threshold)
+    result = detect_outcome_alerts(summary, threshold)
+    cache_set(cache_key, result, ttl_seconds=60)
+    return result
 
 
 @router.get("/api/metrics/b2b", response_model=list[FinancialMovement])
@@ -366,13 +416,21 @@ def get_b2b_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    cache_key = (
+        f"metrics:b2b:{start_date}:{end_date}:{category}:{operation_type}"
+    )
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     movements = [
         movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2B"
     ]
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )
-    return ensure_chronological_order(filtered)
+    result = ensure_chronological_order(filtered)
+    cache_set(cache_key, result, ttl_seconds=30)
+    return result
 
 
 @router.get("/api/metrics/b2c", response_model=list[FinancialMovement])
@@ -382,10 +440,18 @@ def get_b2c_metrics(
     category: Category | None = Query(default=None),
     operation_type: OperationType | None = Query(default=None),
 ) -> list[FinancialMovement]:
+    cache_key = (
+        f"metrics:b2c:{start_date}:{end_date}:{category}:{operation_type}"
+    )
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     movements = [
         movement for movement in generate_mock_movements(seed=42) if movement.business_type == "B2C"
     ]
     filtered = filter_movements(
         movements, start_date, end_date, category, operation_type
     )
-    return ensure_chronological_order(filtered)
+    result = ensure_chronological_order(filtered)
+    cache_set(cache_key, result, ttl_seconds=30)
+    return result

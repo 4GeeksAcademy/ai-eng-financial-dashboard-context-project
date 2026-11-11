@@ -12,7 +12,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-
 interface IncomeOutcomeChartProps {
   data: MonthlyDataPoint[]
   loading?: boolean

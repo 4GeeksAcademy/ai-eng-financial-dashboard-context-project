@@ -1,0 +1,18 @@
+{
+  "test_accuracy": 0.948,
+  "best_val_acc": 0.96,
+  "model": "EfficientNet-B0 (pre-trained ImageNet, backbone frozen)",
+  "total_params": 4171774,
+  "trainable_params": 164226,
+  "test_samples": 500,
+  "confusion_matrix": [
+    [
+      253,
+      14
+    ],
+    [
+      12,
+      221
+    ]
+  ]
+}

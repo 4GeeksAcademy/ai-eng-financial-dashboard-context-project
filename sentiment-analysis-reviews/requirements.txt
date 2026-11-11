@@ -1,0 +1,18 @@
+# ============================================================
+# WeLoveReviews — Sentiment Analysis
+# ============================================================
+# Core data & numerics
+pandas==3.1.0
+numpy==2.5.4
+
+# Visualization (for EDA notebook)
+matplotlib==3.10.3
+seaborn==0.13.2
+
+# ML / Hugging Face
+torch==2.14.1
+transformers==4.50.3
+
+# Notebook
+jupyter==1.1.1
+ipython==9.17.1

@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -18,5 +20,52 @@ services:
     ports:
       - "8000:8000"
       - "5678:5678"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./backend:/app
+      # Business pipeline + reporting service (Part 2). Mounted at /repo so
+      # `data/pipelines` and `services/reporting` are importable from the API
+      # without copying them into the backend image.
+      - ./data:/repo/data
+      - ./services:/repo/services
+    environment:
+      - DATABASE_URL=postgresql://healthcore:healthcore_secret@host.docker.internal:5433/healthcore_telemetry
+      - PYTHONPATH=/repo
+      - PREFECT_HOME=/tmp/prefect
+      - PREFECT_SERVER_ANALYTICS_ENABLED=false
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: healthcore
+      POSTGRES_PASSWORD: healthcore_secret
+      POSTGRES_DB: healthcore_telemetry
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthcore -d healthcore_telemetry"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

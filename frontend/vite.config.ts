@@ -10,7 +10,11 @@ export default defineConfig({
     host: "0.0.0.0",
     proxy: {
       "/api": {
-        target: "http://backend:8000",
+        target: "http://host.docker.internal:8000",
+        changeOrigin: true,
+      },
+      "/reporting": {
+        target: "http://host.docker.internal:8000",
         changeOrigin: true,
       },
     },

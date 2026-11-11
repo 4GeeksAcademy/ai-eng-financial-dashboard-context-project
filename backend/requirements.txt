@@ -4,3 +4,6 @@ debugpy
 pytest
 pytest-cov
 httpx
+asyncpg
+pandas
+prefect>=3
