@@ -7,12 +7,12 @@ Preservar la reproducibilidad de datos simulados y los contratos validados por F
 Cambios en `backend/app/routes.py`, especialmente generación aleatoria, modelos y endpoints.
 
 ## Evidencia del repositorio
-- `generate_mock_movements` llama a `random.seed(seed)` y utiliza el generador aleatorio global mediante `random.uniform`, `random.randint` y `random.choice`.
+- La implementación actual de `generate_mock_movements` llama a `random.seed(seed)` cuando se proporciona una semilla y usa el generador aleatorio global, modificando su estado.
 - `routes.py` declara modelos Pydantic, dominios `Literal` y `response_model` para endpoints.
 - La generación se hace bajo demanda y usa `date.today()`; no se observó persistencia en este flujo.
 
 ## Instrucciones para el agente
-- Conserva la reproducibilidad de `generate_mock_movements` sin alterar el estado aleatorio global compartido.
+- En cambios futuros a `generate_mock_movements`, conserva su reproducibilidad y evita efectos secundarios sobre el estado aleatorio global compartido.
 - Al cambiar parámetros o respuestas, actualiza los modelos/tipos de dominio y el `response_model` correspondiente.
 - Trata estos movimientos como datos simulados generados por petición; no supongas que están almacenados o que su rango anual es fijo.
 
