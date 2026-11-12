@@ -37,3 +37,11 @@ Legend: ✅ verified · ❌ wrong (corrected) · ❔ unverified
 - Exact KPI card / chart titles; Recharts import blocks.
 - "Starter project for 4Geeks context engineering" is an inference, not stated in code.
 - Test suite, lint and build results: not run.
+
+## Note (2026-11-12): later runs supersede "no command was executed"
+The method line above describes this first trial only. Afterwards the following were run locally
+(Python 3.14 venv, Node 24; Docker is not installed on that machine):
+`pytest` 15 passed, `npm test` 5 passed, `npm run lint` clean, `tsc -b` exit 0.
+Not run: `npm run build` (Vite bundle) and the Docker Compose path.
+The claims marked unverified above for the test suite, lint and build are therefore partly resolved;
+the Docker and Compose items remain unverified. Evidence: `.agents/rules/testing-workflow.md`, `memory-bank/SPEC.md`.
