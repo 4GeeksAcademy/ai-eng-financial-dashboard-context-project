@@ -4,6 +4,7 @@ import {
   computeKPIs,
   computeMonthlyData,
   formatCurrency,
+  formatDateRangeLabel,
   formatPercent,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
@@ -100,6 +101,38 @@ describe("computeMonthlyData", () => {
       outcome: 0,
       profitPercent: 100,
     });
+  });
+});
+
+describe("formatDateRangeLabel", () => {
+  const movementOn = (create_date: string): FinancialMovement => ({
+    create_date,
+    amount: 100,
+    operation_type: "income",
+    category: "sales",
+    business_type: "B2B",
+  });
+
+  it("uses the min and max dates of unsorted movements", () => {
+    const movements = [
+      movementOn("2026-03-15"),
+      movementOn("2025-12-03"),
+      movementOn("2026-11-28"),
+      movementOn("2026-01-20"),
+    ];
+
+    expect(formatDateRangeLabel(movements)).toBe("Dec 3, 2025 – Nov 28, 2026");
+  });
+
+  it("returns null for an empty list", () => {
+    expect(formatDateRangeLabel([])).toBeNull();
+  });
+
+  // Run with a negative offset (e.g. TZ=America/Bogota) to catch UTC parsing shifts.
+  it("keeps the first day of the month as the calendar date", () => {
+    const movements = [movementOn("2026-03-01"), movementOn("2026-01-01")];
+
+    expect(formatDateRangeLabel(movements)).toBe("Jan 1, 2026 – Mar 1, 2026");
   });
 });
 

@@ -66,6 +66,34 @@ export function computeMonthlyData(
     });
 }
 
+// Builds the date from its parts to avoid UTC parsing of "YYYY-MM-DD" shifting the day.
+function formatIsoDateLabel(isoDate: string): string {
+  const [year, month, day] = isoDate.slice(0, 10).split("-").map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function formatDateRangeLabel(
+  movements: FinancialMovement[],
+): string | null {
+  if (movements.length === 0) {
+    return null;
+  }
+
+  // ISO dates compare chronologically as strings.
+  let minDate = movements[0].create_date;
+  let maxDate = minDate;
+  for (const m of movements) {
+    if (m.create_date < minDate) minDate = m.create_date;
+    if (m.create_date > maxDate) maxDate = m.create_date;
+  }
+
+  return `${formatIsoDateLabel(minDate)} – ${formatIsoDateLabel(maxDate)}`;
+}
+
 export function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
