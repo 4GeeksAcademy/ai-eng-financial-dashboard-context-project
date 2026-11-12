@@ -4,6 +4,7 @@ import {
   computeKPIs,
   computeMonthlyData,
   formatCurrency,
+  formatMovementPeriod,
   formatPercent,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
@@ -100,6 +101,18 @@ describe("computeMonthlyData", () => {
       outcome: 0,
       profitPercent: 100,
     });
+  });
+});
+
+describe("formatMovementPeriod", () => {
+  it("uses the earliest and latest movement dates", () => {
+    expect(formatMovementPeriod(sampleMovements)).toBe(
+      "2024-01-10 - 2024-02-01",
+    );
+  });
+
+  it("handles an empty movement list", () => {
+    expect(formatMovementPeriod([])).toBe("No data");
   });
 });
 

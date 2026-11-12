@@ -66,6 +66,15 @@ export function computeMonthlyData(
     });
 }
 
+export function formatMovementPeriod(movements: FinancialMovement[]): string {
+  if (movements.length === 0) {
+    return "No data";
+  }
+
+  const dates = movements.map((movement) => movement.create_date).sort();
+  return `${dates[0]} - ${dates[dates.length - 1]}`;
+}
+
 export function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

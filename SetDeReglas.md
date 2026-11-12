@@ -11,3 +11,11 @@ Reglas propuestas para futuros contribuidores y agentes. Son recomendaciones; to
 4. **Especificar el entorno al documentar cómo ejecutar el frontend.** Aclarar si las instrucciones asumen Docker Compose o ejecución directa en el host, y configurar el destino de API para ese entorno. Hecho del repo: [vite.config.ts](frontend/vite.config.ts) configura el proxy hacia `http://backend:8000`, nombre de servicio usado en [docker-compose.yml](docker-compose.yml).
 
 5. **Separar inspección de pruebas ejecutadas.** Informar qué se inspeccionó y qué comandos se ejecutaron; no inferir que las pruebas pasaron por el hecho de que existan. Hecho del repo: [backend/tests/test_routes.py](backend/tests/test_routes.py) contiene pruebas y [Verificacion.md](Verificacion.md) registra que no se ejecutaron.
+
+## Validación mínima en este repo
+
+1. **Período mostrado:** usar movimientos con fechas desordenadas y comprobar que el encabezado coincide con la fecha mínima y máxima; comprobar también que una lista vacía no muestra un período ficticio. Prueba: `frontend/src/lib/financial-utils.test.ts`.
+2. **Datos simulados:** documentar que la semilla `42` reproduce movimientos para la misma fecha de ejecución, pero no congela el rango entre fechas distintas. Contrastar la explicación con `generate_mock_movements` en `backend/app/routes.py`.
+3. **Rutas conectadas:** registrar `GET /api/metrics` como la única ruta consultada por `frontend/src/App.tsx`; listar las demás como disponibles, no integradas. Contrastar el inventario con las rutas declaradas en `backend/app/routes.py`.
+4. **Entorno frontend:** documentar Compose y ejecución directa, con el destino del proxy para ambos. Validar la ejecución directa haciendo una petición a `/api/metrics` a través de Vite y comprobando que recibe respuesta del backend.
+5. **Evidencia de pruebas:** anotar en `Verificacion.md` el comando y resultado de cada prueba realmente ejecutada, separado de las inspecciones estáticas. Para esta tanda se ejecutaron las pruebas frontend y backend y un smoke test del proxy; no se ejecutó Docker Compose.

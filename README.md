@@ -42,12 +42,18 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
 docker compose up --build
 ```
 
-The frontend uses the Vite proxy for `/api` by default, so no extra environment variables are required in local development or Codespaces.
+When running with Docker Compose, the frontend uses the Vite proxy for `/api` by default, so no extra environment variables are required.
 If you need to target a different backend origin, copy `frontend/.env.example` to `.env` and set `VITE_API_BASE_URL`.
 
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000
 - API documentation: http://localhost:8000/docs
+
+### Run the services directly on the host
+
+Start the backend from `backend/` with `python -m uvicorn app.main:app --reload --host 0.0.0.0`.
+Start the frontend from `frontend/` with `VITE_API_PROXY_TARGET=http://localhost:8000 npm run dev`.
+The Vite proxy defaults to `http://backend:8000` for Docker Compose; set `VITE_API_PROXY_TARGET` when running Vite outside Compose.
 
 ---
 
