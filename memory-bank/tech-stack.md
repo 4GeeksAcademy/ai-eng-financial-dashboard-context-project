@@ -1,0 +1,11 @@
+# Tecnología y arquitectura
+
+- **Frontend:** TypeScript, React, Vite, Tailwind CSS y Recharts; Lucide proporciona iconos. Vitest, ESLint y TypeScript cubren pruebas, lint y compilación. Dependencias y comandos: [`frontend/package.json`](../frontend/package.json).
+- **Backend:** Python, FastAPI y modelos Pydantic; Uvicorn ejecuta la API. Las dependencias incluyen pytest, httpx y debugpy: [`backend/requirements.txt`](../backend/requirements.txt).
+- **Comunicación:** [`App.tsx`](../frontend/src/App.tsx) solicita `/api/metrics`; por defecto [`vite.config.ts`](../frontend/vite.config.ts) reenvía `/api` a `http://backend:8000`. `VITE_API_BASE_URL` permite otra base. Los tipos frontend y modelos backend se mantienen por separado en [`financial-types.ts`](../frontend/src/lib/financial-types.ts) y [`routes.py`](../backend/app/routes.py).
+- **Ejecución:** con Docker y Compose, ejecutar `docker compose up --build` desde la raíz. [`docker-compose.yml`](../docker-compose.yml) publica frontend en `5173`, backend en `8000` y debugpy en `5678`. Véanse el [README](../README.es.md) para configuración y la [guía de incorporación](../docs/handover.md) para Codespaces.
+- **Rutas verificadas:** `/health`, `/api/metrics` directamente y por el proxy, y `/docs` respondieron correctamente en las comprobaciones registradas. El puerto `5678` está configurado, pero la depuración no se verificó: [`verification.md`](../verification.md).
+
+## Puntos de entrada para agentes
+
+Consultar [`AGENTS.md`](../AGENTS.md) y [`.agents/rules`](../.agents/rules), [`frontend/src/App.tsx`](../frontend/src/App.tsx), [`financial-utils.ts`](../frontend/src/lib/financial-utils.ts), [`backend/app/main.py`](../backend/app/main.py), [`backend/app/routes.py`](../backend/app/routes.py), [`docker-compose.yml`](../docker-compose.yml) y [`verification.md`](../verification.md). Las pruebas están en [`financial-utils.test.ts`](../frontend/src/lib/financial-utils.test.ts) y [`backend/tests/test_routes.py`](../backend/tests/test_routes.py).

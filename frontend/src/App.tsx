@@ -3,12 +3,12 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
 import { IncomeOutcomeChart } from "@/components/dashboard/income-outcome-chart";
 import { ProfitPercentChart } from "@/components/dashboard/profit-percent-chart";
+import { type FinancialMovement } from "@/lib/financial-types";
 import {
-  type FinancialMovement,
-  type KPIMetrics,
-  type MonthlyDataPoint,
-} from "@/lib/financial-types";
-import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
+  computeKPIs,
+  computeMonthlyData,
+  formatDateRangeLabel,
+} from "@/lib/financial-utils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -21,16 +21,14 @@ async function fetchFinancialData(): Promise<FinancialMovement[]> {
 }
 
 function App() {
-  const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
-  const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
+  const [movements, setMovements] = useState<FinancialMovement[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchFinancialData()
-      .then((movements) => {
-        setMetrics(computeKPIs(movements));
-        setMonthlyData(computeMonthlyData(movements));
+      .then((data) => {
+        setMovements(data);
       })
       .catch(() => {
         setError(
@@ -42,11 +40,19 @@ function App() {
       });
   }, []);
 
+  const metrics = movements ? computeKPIs(movements) : null;
+  const monthlyData = movements ? computeMonthlyData(movements) : [];
+  const period = loading
+    ? "Loading period…"
+    : movements
+      ? (formatDateRangeLabel(movements) ?? "No data")
+      : "Period unavailable";
+
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
-          <DashboardHeader period="2024 - Full Year" />
+          <DashboardHeader period={period} />
 
           {error ? (
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
