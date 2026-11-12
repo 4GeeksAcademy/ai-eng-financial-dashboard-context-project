@@ -1,4 +1,5 @@
 from datetime import date
+import random
 
 from fastapi.testclient import TestClient
 
@@ -16,6 +17,17 @@ def test_generate_mock_movements_returns_full_year_sorted_data():
     assert movements == sorted(movements, key=lambda item: item.create_date)
 
 
+def test_generate_mock_movements_is_reproducible_without_mutating_global_random():
+    random.seed(123)
+    expected_next_value = random.random()
+
+    random.seed(123)
+    movements = generate_mock_movements(seed=42)
+
+    assert movements == generate_mock_movements(seed=42)
+    assert random.random() == expected_next_value
+
+
 def test_filter_movements_by_date_includes_range_edges():
     movements = generate_mock_movements(seed=42)
     target_date = movements[0].create_date
@@ -31,6 +43,32 @@ def test_health_endpoint_returns_ok():
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_cors_preflight_allows_configured_frontend_origin():
+    response = client.options(
+        "/api/metrics",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:5173"
+
+
+def test_cors_preflight_rejects_unconfigured_origin():
+    response = client.options(
+        "/api/metrics",
+        headers={
+            "Origin": "https://untrusted.example",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+
+    assert response.status_code == 400
+    assert "access-control-allow-origin" not in response.headers
 
 
 def test_metrics_endpoint_respects_date_filters():
