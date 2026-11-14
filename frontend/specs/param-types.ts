@@ -1,4 +1,4 @@
-import type { OperationType } from './api-types'
+import type { BusinessType, OperationType } from './api-types'
 
 export type ISODateString = string
 
@@ -19,4 +19,14 @@ export interface TopCategoriesParams extends DateRangeFilter {
   operation_type?: OperationType
   /** Máximo de categorías devueltas; entero entre `1` y `20`, con valor predeterminado `5`. */
   limit?: number
+}
+
+export interface SegmentTopCategoriesParams extends TopCategoriesParams {
+  /** Línea de negocio requerida por la comparativa. Valores válidos: `B2B` y `B2C`. */
+  business_type: BusinessType
+}
+
+export interface SegmentSummaryParams extends DateRangeFilter {
+  /** Línea de negocio requerida por la comparativa. Valores válidos: `B2B` y `B2C`. */
+  business_type: BusinessType
 }
