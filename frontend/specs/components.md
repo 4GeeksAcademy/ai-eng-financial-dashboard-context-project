@@ -10,7 +10,7 @@ Este documento define la composición de UI de las tres funcionalidades. Los con
 - Las peticiones deben conservar `VITE_API_BASE_URL`, comprobar `response.ok` y propagar el estado HTTP en los errores.
 - Carga, error, respuesta vacía y éxito son estados distintos. Una lista vacía con HTTP `200` no es un error.
 
-Los componentes nuevos de dashboard deben ubicarse junto a los existentes en `frontend/src/components/dashboard/`. Esta spec no fija una librería de routing ni una carpeta de páginas porque el proyecto aún no tiene navegación configurada.
+Los componentes nuevos de dashboard deben ubicarse junto a los existentes en `frontend/src/components/dashboard/`. La segunda vista se selecciona desde `App` mediante controles **Overview** y **B2B vs B2C**; no se añade una librería de routing ni una URL independiente en este alcance.
 
 ## 1. Filtro de rango de fechas
 
@@ -73,6 +73,15 @@ Decisiones cerradas:
 
 Cuando cambia el filtro, KPI y gráficos deben derivarse del nuevo `MetricsResponse`; no se filtran por separado en cada componente.
 
+`App` mantiene además:
+
+- La vista activa, inicialmente `overview`.
+- El rango aplicado del dashboard principal.
+- El rango independiente de la comparativa.
+- Las facetas globales, que se solicitan una sola vez y se comparten con ambas vistas.
+
+Cambiar entre `overview` y `comparison` no reinicia esos rangos ni el umbral de alertas. Si falla la petición de facetas, `App` mantiene disponibles las cargas sin rango, muestra el error y deshabilita `DateRangeControls`.
+
 ### Estados visibles
 
 | Estado | UI |
@@ -100,16 +109,19 @@ Coordina el umbral, el rango activo y los estados de la petición.
 ```ts
 interface AlertsSectionProps {
   dateRange: DateRangeFilter
+  threshold: NonNullable<AlertsParams['threshold']>
+  onThresholdApply: (value: NonNullable<AlertsParams['threshold']>) => void
 }
 ```
 
 Responsabilidades:
 
-- Mantener `threshold` con valor inicial `0.3`.
+- Recibir de `App` el `threshold`, cuyo valor inicial es `0.3`.
 - Validar en UI el intervalo `0.01`–`1.0`.
 - Solicitar `GET /api/metrics/alerts` con `AlertsParams`.
 - Pasar el resultado, carga y error a los componentes presentacionales.
-- Volver a solicitar alertas cuando cambien el umbral válido o el rango activo.
+- Confirmar cambios válidos mediante `onThresholdApply`.
+- Volver a solicitar alertas cuando cambien `threshold` o el rango activo.
 
 No debe presentar `baseline_average` como media móvil de tres períodos hasta que el contrato pendiente garantice ese cálculo.
 
@@ -190,19 +202,28 @@ BusinessComparisonPage (nuevo, contenedor de datos)
 └── BusinessIncomeComparisonChart (nuevo)
 ```
 
-`BusinessComparisonPage` representa la nueva vista solicitada. Cómo se llega a ella queda pendiente de la futura decisión de navegación.
+`BusinessComparisonPage` representa la nueva vista solicitada. `App` la muestra al seleccionar **B2B vs B2C** y vuelve al dashboard principal mediante **Overview**.
 
 ### `BusinessComparisonPage`
 
+```ts
+interface BusinessComparisonPageProps {
+  dateRange: DateRangeFilter
+  availableRange: Pick<FacetsResponse, 'min_date' | 'max_date'> | null
+  filtersDisabled: boolean
+  onDateRangeApply: (value: DateRangeFilter) => void
+}
+```
+
 Responsabilidades:
 
-- Mantener un único `DateRangeFilter` para toda la comparativa.
+- Recibir y aplicar mediante `onDateRangeApply` el único `DateRangeFilter` de la comparativa.
 - Solicitar `categories/top` para B2B y B2C con `operation_type=income` y `limit=5`.
 - Solicitar `summary` para B2B y B2C con el mismo rango.
 - Sumar `MetricsSummaryItem.income` para obtener el total completo de cada segmento.
 - Calcular el porcentaje de cada `CategoryEntry` sobre el total de su segmento.
 - No usar la suma del top como total del gráfico.
-- Solicitar `FacetsResponse` para el rango global, sin presentarlo como facetas específicas por segmento.
+- Usar el rango global recibido de `App`, sin volver a solicitar facetas ni presentarlas como específicas por segmento.
 
 Tipos de petición exportados por [`param-types.ts`](./param-types.ts):
 
@@ -273,7 +294,7 @@ Decisiones cerradas:
 - El gráfico usa esos mismos dos totales completos.
 - Una respuesta de categorías con menos de cinco filas es válida; no se rellenan filas.
 - `FacetsResponse.categories` se considera un catálogo global. Las filas B2B/B2C proceden de `TopCategoriesResponse`; la exigencia del PM de facetas específicas por segmento permanece bloqueada hasta que la API admita `business_type` en facetas.
-- `BusinessComparisonPage` define la vista, pero no introduce una librería de routing. La integración de navegación se mantiene fuera de esta especificación de componentes para no imponer infraestructura inexistente.
+- `BusinessComparisonPage` no introduce una librería de routing. `App` conserva en estado local la vista activa (`overview` o `comparison`) y renderiza una de las dos vistas.
 
 ### Estados visibles
 
