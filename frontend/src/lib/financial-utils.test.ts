@@ -101,6 +101,21 @@ describe("computeMonthlyData", () => {
       profitPercent: 100,
     });
   });
+
+  it("keeps first-of-month ISO dates in their calendar month", () => {
+    const monthlyData = computeMonthlyData([
+      {
+        create_date: "2026-03-01",
+        amount: 125,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+    ]);
+
+    expect(monthlyData).toHaveLength(1);
+    expect(monthlyData[0].month).toBe("Mar 2026");
+  });
 });
 
 describe("formatters", () => {

@@ -13,3 +13,10 @@ Agents working on this project **must**:
   _(if the directory exists)_
 
 Before taking action (analyzing code, modifying files, or generating outputs), always review the latest files in these locations to ensure compliance with project conventions, context, and operational constraints.
+
+name
+grill-me
+description
+A relentless interview to sharpen a plan or design.
+disable-model-invocation
+true
