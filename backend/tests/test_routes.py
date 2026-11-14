@@ -101,6 +101,21 @@ def test_b2b_endpoint_combines_new_filters():
     assert all(item["category"] == "suppliers" for item in payload)
 
 
+def test_b2c_endpoint_combines_new_filters():
+    response = client.get(
+        "/api/metrics/b2c",
+        params={"operation_type": "outcome", "category": "suppliers"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload
+    assert all(item["business_type"] == "B2C" for item in payload)
+    assert all(item["operation_type"] == "outcome" for item in payload)
+    assert all(item["category"] == "suppliers" for item in payload)
+    assert payload == sorted(payload, key=lambda item: item["create_date"])
+
+
 def test_metrics_facets_returns_filter_options_and_date_range():
     response = client.get("/api/metrics/facets")
 
