@@ -58,6 +58,56 @@ describe("computeKPIs", () => {
     const metrics = computeKPIs(onlyOutcomes);
     expect(metrics.profitPercent).toBe(0);
   });
+
+  it("returns zeroed metrics for an empty list", () => {
+    expect(computeKPIs([])).toEqual({
+      totalIncome: 0,
+      totalOutcome: 0,
+      profit: 0,
+      profitPercent: 0,
+    });
+  });
+
+  it("reports a negative profit when outcomes exceed income", () => {
+    const metrics = computeKPIs([
+      {
+        create_date: "2024-04-02",
+        amount: 400,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2C",
+      },
+      {
+        create_date: "2024-04-03",
+        amount: 1000,
+        operation_type: "outcome",
+        category: "administrative",
+        business_type: "B2B",
+      },
+    ]);
+
+    expect(metrics.profit).toBe(-600);
+    expect(metrics.profitPercent).toBe(-150);
+  });
+
+  it("reports 100% profit when there are only incomes", () => {
+    const metrics = computeKPIs([
+      {
+        create_date: "2024-05-07",
+        amount: 800,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+    ]);
+
+    expect(metrics).toEqual({
+      totalIncome: 800,
+      totalOutcome: 0,
+      profit: 800,
+      profitPercent: 100,
+    });
+  });
 });
 
 describe("computeMonthlyData", () => {
