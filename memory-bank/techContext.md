@@ -40,7 +40,9 @@
   - `npm run test` - Single run
   - `npm run test:watch` - Watch mode
   - `npm run test:coverage` - Coverage report
-- **Status:** Infrastructure present, tests not yet written
+- **Status:** Infrastructure present; unit tests for KPI calculations in `src/lib/financial-utils.test.ts`
+- **Skill:** `vitest` from `antfu/skills` (recorded in `skills-lock.json`), applied in commit `28b4b0f`. Its `.agents/skills/vitest/SKILL.md` metadata states it is based on Vitest 5.1.0-beta.1, while the project uses Vitest 4.1.4; check API differences against the installed version.
+- **Why Vitest:** Shares the Vite pipeline and `@` alias with `vite.config.ts` and runs TypeScript natively, so tests use the same resolution as the app. It is used to validate `computeKPIs` (totals, profit, `profitPercent`, zero-income and empty-list edge cases) because KPI arithmetic is the core financial logic of the dashboard.
 
 #### Code Quality
 - **Linter:** ESLint 9.39.4
@@ -363,7 +365,7 @@ npm run test:coverage # Coverage report
 - Event simulation
 - Mocking utilities
 
-**Current Gap:** No test files written, infrastructure ready
+**Current Coverage:** `computeKPIs` and `computeMonthlyData` plus formatters (`src/lib/financial-utils.test.ts`). UI components are not yet tested.
 
 ---
 
