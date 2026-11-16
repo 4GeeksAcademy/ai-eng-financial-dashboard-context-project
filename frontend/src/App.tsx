@@ -32,7 +32,8 @@ function App() {
         setMetrics(computeKPIs(movements));
         setMonthlyData(computeMonthlyData(movements));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("fetchFinancialData failed", err);
         setError(
           "No se pudo cargar la informacion financiera. Revisa la API de backend.",
         );
@@ -44,12 +45,22 @@ function App() {
 
   return (
     <main className="dark min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <a
+        href="#main-content"
+        className="absolute left-0 top-0 z-50 -translate-y-full rounded bg-primary px-3 py-2 text-primary-foreground text-sm font-medium focus:translate-y-0"
+      >
+        Skip to main content
+      </a>
+      <div id="main-content" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
           <DashboardHeader period="2024 - Full Year" />
 
           {error ? (
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
+            <div
+              className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
+              role="alert"
+              aria-live="polite"
+            >
               {error}
             </div>
           ) : null}

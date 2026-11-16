@@ -8,7 +8,7 @@ export function DashboardHeader({ period = '2024 — Full Year' }: DashboardHead
   return (
     <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary" aria-hidden="true">
           <LayoutDashboard size={18} />
         </span>
         <div>

@@ -75,48 +75,50 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                width={48}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                formatter={(value) => (
-                  <span className="text-xs text-muted-foreground capitalize">{value}</span>
-                )}
-              />
-              <Line
-                type="monotone"
-                dataKey="income"
-                name="income"
-                stroke="var(--chart-income)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--chart-income)', strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="outcome"
-                name="outcome"
-                stroke="var(--chart-outcome)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <div aria-label="Income vs. Outcome chart showing monthly financial evolution" role="img">
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                  width={48}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  formatter={(value) => (
+                    <span className="text-xs text-muted-foreground capitalize">{value}</span>
+                  )}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="income"
+                  name="income"
+                  stroke="var(--chart-income)"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: 'var(--chart-income)', strokeWidth: 0 }}
+                  activeDot={{ r: 5, strokeWidth: 0 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="outcome"
+                  name="outcome"
+                  stroke="var(--chart-outcome)"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
+                  activeDot={{ r: 5, strokeWidth: 0 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>
