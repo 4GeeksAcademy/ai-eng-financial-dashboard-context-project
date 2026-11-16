@@ -117,3 +117,5 @@ and is imported directly (`routes.py:9`) without being listed.
 - Docker Compose behavior, HMR inside the container, and the `npm run build` bundle: not run.
 - Intended users, product goals, or a roadmap: the repo states none beyond the README sentence above.
   This document does not propose any.
+
+Next steps for the gaps and "Not established" items above: see `memory-bank/progress.md` ("Next priorities").

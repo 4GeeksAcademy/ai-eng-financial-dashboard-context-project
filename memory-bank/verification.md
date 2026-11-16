@@ -45,3 +45,5 @@ The method line above describes this first trial only. Afterwards the following 
 Not run: `npm run build` (Vite bundle) and the Docker Compose path.
 The claims marked unverified above for the test suite, lint and build are therefore partly resolved;
 the Docker and Compose items remain unverified. Evidence: `.agents/rules/testing-workflow.md`, `memory-bank/SPEC.md`.
+
+Next steps for every open item above: see `memory-bank/progress.md` ("Next priorities").
