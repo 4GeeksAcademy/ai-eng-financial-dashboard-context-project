@@ -1,5 +1,12 @@
 # Verification record
 
+## Repository and phase commits
+
+- Repository: `4GeeksAcademy/ai-eng-financial-dashboard-context-project`; student fork: `Cyber-G3/ai-eng-financial-dashboard-context-project`.
+- Application source baseline: `954f812d6fb0d95af6699b369ca6e88089ece90c`.
+- Working branch: `phase-3-agent-rules`; remote `origin` points to the student fork.
+- The phase deliverables are kept in separate commits: `docs: record verified project handover`; `docs: document repository conventions and risks`; `docs: add and validate project-specific agent rules`; `docs: add verified project memory bank`.
+
 ## Phase 1 — Understand the project
 
 - Repository inspected: `4GeeksAcademy/ai-eng-financial-dashboard-context-project`.
@@ -65,3 +72,16 @@ This record reflects evidence available at the inspected revision; it does not c
 | Docker availability | `docker` is not installed; `docker compose up --build` could not be run. |
 
 The local smoke check verifies the source-level Vite proxy and API route, but it is not a Docker Compose or Codespaces run.
+
+## Pending and limitations
+
+- Docker Compose startup remains unverified because Docker is not installed in this environment. The local smoke check does not replace a Compose or Codespaces run.
+- No live Codespaces port forwarding was checked.
+- No CI/CD, production environment, database, product requirements document, or architecture decision record was found in the inspected repository tree; external systems were not inspected.
+- Findings describe the checked revision plus handover commits on the fork branch, not any later upstream changes.
+
+## Phase 4 — Memory bank
+
+- Added `memory-bank/README.md`, `product-overview.md`, `architecture.md`, `stack-and-operations.md`, and `current-state.md`.
+- Updated current-state notes with test, build, local smoke-check outcomes, and the Docker limitation.
+- Checked relative Markdown links, final newlines, trailing whitespace, and `git diff --check`; all passed.
