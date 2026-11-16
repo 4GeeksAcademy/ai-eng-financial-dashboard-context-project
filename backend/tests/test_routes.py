@@ -87,6 +87,12 @@ def test_metrics_endpoint_filters_by_operation_type():
     assert all(item["operation_type"] == "income" for item in payload)
 
 
+def test_metrics_endpoint_rejects_invalid_operation_type():
+    response = client.get("/api/metrics", params={"operation_type": "transfer"})
+
+    assert response.status_code == 422
+
+
 def test_b2b_endpoint_combines_new_filters():
     response = client.get(
         "/api/metrics/b2b",
