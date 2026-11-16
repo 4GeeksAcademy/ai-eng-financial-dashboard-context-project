@@ -21,7 +21,7 @@ Test whether GitHub Copilot follows the engineering rules in `.agents/rules/`.
 
 ## Limitations
 
-Both tests were explanation-based. No application code was modified, and actual implementation behavior was not tested.
+The initial two tests were explanation-based and did not modify application code or verify runtime behavior. A subsequent real repository task created a RevenueSummary component, as documented below.
 
 ## Conclusion
 
