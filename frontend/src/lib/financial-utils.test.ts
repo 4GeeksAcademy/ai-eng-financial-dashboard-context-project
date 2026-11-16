@@ -33,6 +33,15 @@ const sampleMovements: FinancialMovement[] = [
 ];
 
 describe("computeKPIs", () => {
+  it("returns zeroed metrics when there are no movements", () => {
+    expect(computeKPIs([])).toEqual({
+      totalIncome: 0,
+      totalOutcome: 0,
+      profit: 0,
+      profitPercent: 0,
+    });
+  });
+
   it("calculates totals and profit values", () => {
     const metrics = computeKPIs(sampleMovements);
 
