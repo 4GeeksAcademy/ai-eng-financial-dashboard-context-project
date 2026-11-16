@@ -66,3 +66,34 @@ Actualmente el producto opera con datos simulados deterministas (seed fija) gene
 - Agregar vistas comparativas y alertas en frontend usando endpoints ya existentes.
 - Definir perfiles de usuario y acceso por rol.
 - Incorporar historico de cierres mensuales y exportacion de reportes.
+
+---
+
+## Skills Internas del Proyecto
+
+### financial-data-formatting (v1.0)
+
+**Ubicación:** `.agents/skills/financial-data-formatting.md`
+
+**Propósito:** Convenciones estándar de formateo para datos monetarios, porcentajes y métricas ejecutivas.
+
+**Cubre:**
+- Formateo de montos USD (sin decimales por defecto)
+- Porcentajes de rentabilidad (1-2 decimales según contexto)
+- Mapeo de categorías técnicas a etiquetas UI
+- Colores e iconos por tipo de operación (income/outcome)
+- Períodos y variación porcentual
+
+**Funciones principales:**
+- `formatCurrency(value: number)` → "$1,500"
+- `formatPercent(value: number)` → "23.5%"
+- `formatCategoryLabel(category: Category, context?)` → "Suppliers"
+- `formatOperationTypeLabel(type: OperationType)` → {label, icon, color}
+- `formatPeriodLabel(start: Date, end: Date)` → "January 1 - 31, 2025"
+- `formatDeltaPercent(previous: number, current: number)` → "+20.0%"
+
+**Criterios de aceptación:** 5 (C1-C5) verificables en SKILL.md
+
+**Oportunidad de valor:** Resuelve problemas de formateo disperso, precisión numérica backend (Decimal), y extensibilidad para nuevas métricas.
+
+**Usar en PRs cuando:** Se agreguen componentes con datos financieros, se cambien formatos visuales, se implementen nuevas métricas.
