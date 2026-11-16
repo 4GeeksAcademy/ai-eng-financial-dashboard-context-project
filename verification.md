@@ -36,3 +36,9 @@
 - No dependencies were installed and no application process was started in Phase 1.
 
 This record reflects evidence available at the inspected revision; it does not claim that the application ran successfully.
+
+## Phase 2 — Conventions and risks
+
+- Documented observed backend/frontend patterns, evidence-backed risks, and a proposed mapping from rules to repository files in `engineering-findings.md`.
+- Checked the official GitHub Copilot documentation on repository and agent instructions on 2026-11-16. The installed Copilot version and Codespaces settings remain unknown.
+- No application code changed in this phase. The findings are observations and risks; they do not assert external deployment behavior.
