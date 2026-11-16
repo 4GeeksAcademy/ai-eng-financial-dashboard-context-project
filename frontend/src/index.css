@@ -14,7 +14,7 @@
   --secondary: oklch(0.93 0.01 240);
   --secondary-foreground: oklch(0.2 0.01 240);
   --muted: oklch(0.93 0.01 240);
-  --muted-foreground: oklch(0.5 0.01 240);
+  --muted-foreground: oklch(0.42 0.01 240);
   --accent: oklch(0.93 0.01 240);
   --accent-foreground: oklch(0.2 0.01 240);
   --destructive: oklch(0.577 0.245 27.325);
@@ -51,7 +51,7 @@
   --secondary: oklch(0.24 0.015 240);
   --secondary-foreground: oklch(0.94 0.005 240);
   --muted: oklch(0.24 0.015 240);
-  --muted-foreground: oklch(0.62 0.01 240);
+  --muted-foreground: oklch(0.68 0.01 240);
   --accent: oklch(0.24 0.015 240);
   --accent-foreground: oklch(0.94 0.005 240);
   --destructive: oklch(0.45 0.18 27);
@@ -114,6 +114,16 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
   }
 }
 

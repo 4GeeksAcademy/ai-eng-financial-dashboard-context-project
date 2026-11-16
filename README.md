@@ -36,6 +36,15 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
       └─ /SKILL.md
 ```
 
+## Memory bank
+
+Project context documentation for collaborators is available in:
+
+- [memory-bank/productContext.md](./memory-bank/productContext.md)
+- [memory-bank/techContext.md](./memory-bank/techContext.md)
+- [memory-bank/systemPatterns.md](./memory-bank/systemPatterns.md)
+- [memory-bank/progress.md](./memory-bank/progress.md)
+
 ## How to run locally
 
 ```bash

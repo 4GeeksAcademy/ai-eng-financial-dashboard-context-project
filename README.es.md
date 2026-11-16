@@ -36,6 +36,15 @@ _Dashboard de métricas financieras con frontend en React + TypeScript y backend
       └─ /SKILL.md
 ```
 
+## Memory bank
+
+La documentacion de contexto del proyecto para colaboradores esta disponible en:
+
+- [memory-bank/productContext.md](./memory-bank/productContext.md)
+- [memory-bank/techContext.md](./memory-bank/techContext.md)
+- [memory-bank/systemPatterns.md](./memory-bank/systemPatterns.md)
+- [memory-bank/progress.md](./memory-bank/progress.md)
+
 ## Cómo ejecutar en local
 
 ```bash

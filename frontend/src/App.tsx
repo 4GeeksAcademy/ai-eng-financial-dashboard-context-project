@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
-import { IncomeOutcomeChart } from "@/components/dashboard/income-outcome-chart";
-import { ProfitPercentChart } from "@/components/dashboard/profit-percent-chart";
 import {
   type FinancialMovement,
   type KPIMetrics,
   type MonthlyDataPoint,
 } from "@/lib/financial-types";
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
+
+const IncomeOutcomeChart = lazy(() => import("@/components/dashboard/income-outcome-chart").then(m => ({ default: m.IncomeOutcomeChart })));
+const ProfitPercentChart = lazy(() => import("@/components/dashboard/profit-percent-chart").then(m => ({ default: m.ProfitPercentChart })));
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -32,7 +33,8 @@ function App() {
         setMetrics(computeKPIs(movements));
         setMonthlyData(computeMonthlyData(movements));
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("fetchFinancialData failed", err);
         setError(
           "No se pudo cargar la informacion financiera. Revisa la API de backend.",
         );
@@ -44,12 +46,22 @@ function App() {
 
   return (
     <main className="dark min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <a
+        href="#main-content"
+        className="absolute left-0 top-0 z-50 -translate-y-full rounded bg-primary px-3 py-2 text-primary-foreground text-sm font-medium focus:translate-y-0"
+      >
+        Skip to main content
+      </a>
+      <div id="main-content" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
           <DashboardHeader period="2024 - Full Year" />
 
           {error ? (
-            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground">
+            <div
+              className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
+              role="alert"
+              aria-live="polite"
+            >
               {error}
             </div>
           ) : null}
@@ -62,8 +74,12 @@ function App() {
             aria-label="Financial charts"
             className="grid grid-cols-1 gap-4 xl:grid-cols-2"
           >
-            <IncomeOutcomeChart data={monthlyData} loading={loading} />
-            <ProfitPercentChart data={monthlyData} loading={loading} />
+            <Suspense fallback={<div className="rounded-lg border border-border/60 h-80 bg-muted/20 animate-pulse" />}>
+              <IncomeOutcomeChart data={monthlyData} loading={loading} />
+            </Suspense>
+            <Suspense fallback={<div className="rounded-lg border border-border/60 h-80 bg-muted/20 animate-pulse" />}>
+              <ProfitPercentChart data={monthlyData} loading={loading} />
+            </Suspense>
           </section>
         </div>
       </div>
