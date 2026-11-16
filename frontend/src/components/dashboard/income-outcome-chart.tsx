@@ -55,7 +55,7 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
           <Skeleton className="h-3 w-64 mt-1" />
         </CardHeader>
         <CardContent>
-          <Skeleton className="h-[280px] w-full rounded-lg" />
+          <Skeleton className="h-[280px] w-full rounded-lg" style={{ aspectRatio: '100 / 140' }} />
         </CardContent>
       </Card>
     )
