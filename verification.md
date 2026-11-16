@@ -85,3 +85,10 @@ The local smoke check verifies the source-level Vite proxy and API route, but it
 - Added `memory-bank/README.md`, `product-overview.md`, `architecture.md`, `stack-and-operations.md`, and `current-state.md`.
 - Updated current-state notes with test, build, local smoke-check outcomes, and the Docker limitation.
 - Checked relative Markdown links, final newlines, trailing whitespace, and `git diff --check`; all passed.
+
+## Follow-up — clearer agent questions and phase execution
+
+- Added `.agents/rules/phase-based-workflow.md` to make multi-step work report phase actions, decisions requiring the owner's input, evidence, and completion status. It directs agents to begin clearly authorized, reversible repository work without repeatedly asking for confirmation.
+- Added `.agents/rules/dashboard-product-decisions.md` to ask only when financial definitions, date ranges, currency, data provenance, or user-visible behavior remain unspecified. Its triggers cite the dashboard's fixed 2024 label, dynamically generated API dates, in-memory mock records, and current calculation/tests.
+- Applied these rules to this follow-up task: existing repository facts were inspected first; the requested rule files were added; no product behavior was changed. The rules distinguish unresolved product choices from work that can proceed immediately.
+- This follow-up documents the rule-writing workflow; it does not claim a Docker Compose run or add tests for a product change.
