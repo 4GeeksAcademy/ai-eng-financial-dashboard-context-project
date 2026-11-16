@@ -26,3 +26,15 @@ Both tests were explanation-based. No application code was modified, and actual 
 ## Conclusion
 
 Copilot demonstrated that it could identify and apply the relevant repository rules in two small task-planning scenarios. No further rule revisions were required based on these results.
+
+## Additional Test: Real Repository Task
+
+**Task:** Asked GitHub Copilot to create `frontend/src/components/dashboard/revenue-summary.tsx` following `.agents/rules/frontend-rules.md`.
+
+**Result:** Copilot created a React `RevenueSummary` component with a named export, a TypeScript props interface, loading and error states, existing UI components, and the project's `formatCurrency` utility.
+
+**Rule verification:** Inspected the generated source code and confirmed the expected filename, named export, props interface, existing utility imports, and styling conventions.
+
+**Build verification:** Ran `cd frontend && npm run build`. TypeScript compilation and the Vite production build completed successfully (2,290 modules transformed). Vite reported a non-blocking bundle-size warning.
+
+**Limitations:** The component was not integrated into the dashboard or tested in the browser. This verifies code generation, inspected conventions, and successful compilation, not full runtime behavior.
