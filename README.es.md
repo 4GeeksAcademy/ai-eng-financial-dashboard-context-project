@@ -49,6 +49,15 @@ Si necesitas apuntar a otro backend, copia `frontend/.env.example` como `.env` y
 - Backend: http://localhost:8000
 - Documentación API: http://localhost:8000/docs
 
+### Construir la imagen de producción
+
+```bash
+docker build --build-arg VITE_API_BASE_URL=https://api.example.com -t financial-dashboard ./frontend
+docker run --rm -p 8080:80 financial-dashboard
+```
+
+`VITE_API_BASE_URL` se incorpora durante la compilación. Para una API del mismo origen, omítela y configura el proxy inverso del alojamiento para dirigir `/api/` al backend.
+
 ### Ejecutar los servicios directamente en el host
 
 Inicia el backend desde `backend/` con `python -m uvicorn app.main:app --reload --host 0.0.0.0`.

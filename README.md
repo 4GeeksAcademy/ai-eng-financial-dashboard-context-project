@@ -49,6 +49,15 @@ If you need to target a different backend origin, copy `frontend/.env.example` t
 - Backend: http://localhost:8000
 - API documentation: http://localhost:8000/docs
 
+### Build the production image
+
+```bash
+docker build --build-arg VITE_API_BASE_URL=https://api.example.com -t financial-dashboard ./frontend
+docker run --rm -p 8080:80 financial-dashboard
+```
+
+`VITE_API_BASE_URL` is embedded at build time. For a same-origin API, omit it and configure the hosting reverse proxy to route `/api/` to the backend.
+
 ### Run the services directly on the host
 
 Start the backend from `backend/` with `python -m uvicorn app.main:app --reload --host 0.0.0.0`.
