@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -62,22 +69,30 @@ function App() {
   const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const requestInFlight = useRef(false);
+
+  const loadFinancialData = useCallback(async () => {
+    if (requestInFlight.current) return;
+
+    requestInFlight.current = true;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const movements = await fetchFinancialData();
+      setMetrics(computeKPIs(movements));
+      setMonthlyData(computeMonthlyData(movements));
+    } catch {
+      setError("Unable to load financial data. Please check the backend API.");
+    } finally {
+      requestInFlight.current = false;
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchFinancialData()
-      .then((movements) => {
-        setMetrics(computeKPIs(movements));
-        setMonthlyData(computeMonthlyData(movements));
-      })
-      .catch(() => {
-        setError(
-          "Unable to load financial data. Please check the backend API.",
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+    void loadFinancialData();
+  }, [loadFinancialData]);
 
   return (
     <main className="dark min-h-screen bg-background text-foreground">
@@ -96,10 +111,17 @@ function App() {
 
           {error ? (
             <div
-              role="alert"
-              className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-foreground"
             >
-              {error}
+              <p role="alert">{error}</p>
+              <button
+                type="button"
+                onClick={() => void loadFinancialData()}
+                disabled={loading}
+                className="rounded-md border border-destructive/50 px-3 py-1.5 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Retry
+              </button>
             </div>
           ) : null}
 
