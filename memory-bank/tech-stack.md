@@ -6,6 +6,7 @@
 - **Backend:** Python 3.13, FastAPI y Uvicorn; debugpy se usa en el comando del contenedor. `pytest`, `pytest-cov` y `httpx` están declarados en dependencias. Fuentes: [`backend/Dockerfile`](../backend/Dockerfile), [`backend/requirements.txt`](../backend/requirements.txt).
 - **Orquestación:** Docker Compose define `frontend` (puerto 5173) y `backend` (puertos 8000 y 5678; 5678 es depuración, no otro servicio). Fuente: [`docker-compose.yml`](../docker-compose.yml).
 - **Versiones pendientes:** `backend/requirements.txt` no fija versiones; por ello no se registran versiones concretas de paquetes Python instalados.
+- **Herramientas de agente:** `AGENTS.md` enlaza las reglas en `.agents/rules/`; `.agents/skills/` contiene las skills comunitarias `accessibility`, `vercel-react-best-practices` y `web-quality-audit`, además de la skill interna `change-validation`. Las skills comunitarias están registradas en [`skills-lock.json`](../skills-lock.json). Fuentes, commits y usos se documentan en [`docs/phase5-agent-skills.md`](../docs/phase5-agent-skills.md).
 
 ## Arquitectura y flujo de datos
 
@@ -33,7 +34,7 @@ docker compose exec -T backend pytest
 docker compose exec -T frontend npm test
 ```
 
-Los dos comandos de pruebas se ejecutaron en esta revisión: backend, **16 aprobadas** con una advertencia de deprecación de Starlette; frontend, **5 aprobadas**. Los scripts frontend están definidos en [`frontend/package.json`](../frontend/package.json) y las pruebas backend en [`backend/tests/test_routes.py`](../backend/tests/test_routes.py).
+Historial registrado en una revisión anterior (no repetido en la documentación de Fase 5): backend, **16 aprobadas** con una advertencia de deprecación de Starlette; frontend, **5 aprobadas**. Los scripts frontend están definidos en [`frontend/package.json`](../frontend/package.json) y las pruebas backend en [`backend/tests/test_routes.py`](../backend/tests/test_routes.py). La procedencia y el alcance están detallados en [`current-state.md`](./current-state.md).
 
 ## Archivos de referencia
 
