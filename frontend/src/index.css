@@ -123,3 +123,9 @@ body,
 #root {
   min-height: 100%;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+}
