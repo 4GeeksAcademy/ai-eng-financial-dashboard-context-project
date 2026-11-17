@@ -234,7 +234,7 @@ These are recommendations for future contributors and AI coding agents, derived 
 
 **Proposed Rule:** For an API request failure, retain the non-OK response check and visible error state when changing request handling; if changing diagnostics, avoid losing the caught error without replacing that behavior with another documented diagnostic path.
 
-**Repository Evidence:** `frontend/src/App.tsx::fetchFinancialData` throws when `response.ok` is false, and the `.catch()` handler displays an error message, although it currently discards the caught error.
+**Repository Evidence:** `frontend/src/App.tsx::fetchFinancialData` throws when `response.ok` is false, and the `.catch()' handler displays an error message, although it currently discards the caught error.
 
 **Reason:** Preserves the existing user-visible failure handling while making clear that the current message does not expose diagnostic details.
 
