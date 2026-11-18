@@ -20,3 +20,17 @@
 
 - The "2024 - Full Year" badge is hardcoded (frontend/src/App.tsx line 49), but the backend builds dates from today's date (backend/app/routes.py line 97), so the charts show the last 12 months, not 2024.
 - The backend also starts a debugger on port 5678 (backend/Dockerfile), which the README does not mention.
+
+# Phase 3 rule validation
+
+Tested in a fresh agent chat (no memory of writing the rules), told to read AGENTS.md and .agents/rules/ first.
+
+| Task | Rules the agent cited | Result |
+|---|---|---|
+| Add GET /api/metrics/count + a backend test | backend-api.md 1, 2, 3 (routes.py, GET + response_model, seed=42); testing.md 1, 2 | ✅ Followed. Test passed in Docker (1 passed). |
+| Add "run backend tests" to the README | documentation.md 1 (update both READMEs) | ✅ Updated README.md and README.es.md. |
+| Translate the Spanish load-error in App.tsx | frontend-structure.md 9 | ❌ Agent refused: rule 9 said to leave the string in Spanish. |
+
+## Refinement
+- frontend-structure.md rule 9 described a fact ("the error string is Spanish") and the agent read it as an order. Rewrote it: all user-facing text must be English, and translating the error is expected.
+- Re-ran the task in a new chat: ✅ agent translated it, cited rule 9, and kept App.tsx's double-quote style (rule 8).entation.md rule 2 (from F27) said .agents/rules did not exist; it went stale once the folder was created. Updated it to "read .agents/rules/ and memory-bank/".

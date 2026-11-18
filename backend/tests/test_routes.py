@@ -26,6 +26,13 @@ def test_filter_movements_by_date_includes_range_edges():
     assert all(movement.create_date == target_date for movement in filtered)
 
 
+def test_metrics_count_returns_number_of_movements():
+    response = client.get("/api/metrics/count")
+
+    assert response.status_code == 200
+    assert response.json() == {"count": len(generate_mock_movements(seed=42))}
+
+
 def test_health_endpoint_returns_ok():
     response = client.get("/health")
 

@@ -62,6 +62,10 @@ class MetricsAlert(BaseModel):
     increase_ratio: float
 
 
+class MetricsCount(BaseModel):
+    count: int
+
+
 def _year_for_month(month: int, today: date) -> int:
     if month < today.month:
         return today.year
@@ -257,6 +261,20 @@ def get_metrics(
         movements, start_date, end_date, category, operation_type
     )
     return ensure_chronological_order(filtered)
+
+
+@router.get("/api/metrics/count", response_model=MetricsCount)
+def get_metrics_count(
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
+    category: Category | None = Query(default=None),
+    operation_type: OperationType | None = Query(default=None),
+) -> MetricsCount:
+    movements = generate_mock_movements(seed=42)
+    filtered = filter_movements(
+        movements, start_date, end_date, category, operation_type
+    )
+    return MetricsCount(count=len(filtered))
 
 
 @router.get("/api/metrics/facets", response_model=MetricsFacets)
