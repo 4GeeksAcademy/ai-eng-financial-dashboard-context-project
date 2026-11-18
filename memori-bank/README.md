@@ -8,6 +8,10 @@ La API genera movimientos simulados: usa la semilla `42`, genera 30 movimientos 
 
 El frontend consume `GET /api/metrics`. El backend también declara rutas de facets, resumen, categorías, comparación, alertas, B2B y B2C, pero no se observan conectadas desde la interfaz actual ([App.tsx](../frontend/src/App.tsx), [routes.py](../backend/app/routes.py)). Docker Compose define servicios para frontend y backend; no declara una base de datos ([docker-compose.yml](../docker-compose.yml)).
 
+## Skills seleccionadas
+
+Se eligió la skill **SEO** porque el proyecto se posiciona en el sector web y necesita cuidar su visibilidad orgánica y descubrimiento en buscadores. La guía cubre SEO técnico, optimización on-page y datos estructurados; sirve para orientar mejoras, pero no garantiza posiciones ni resultados de búsqueda.
+
 ## Stack tecnológico
 
 | Área | Tecnología | Evidencia |
