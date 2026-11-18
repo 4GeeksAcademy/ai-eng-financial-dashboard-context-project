@@ -33,4 +33,5 @@ Tested in a fresh agent chat (no memory of writing the rules), told to read AGEN
 
 ## Refinement
 - frontend-structure.md rule 9 described a fact ("the error string is Spanish") and the agent read it as an order. Rewrote it: all user-facing text must be English, and translating the error is expected.
-- Re-ran the task in a new chat: ✅ agent translated it, cited rule 9, and kept App.tsx's double-quote style (rule 8).entation.md rule 2 (from F27) said .agents/rules did not exist; it went stale once the folder was created. Updated it to "read .agents/rules/ and memory-bank/".
+- Re-ran the task in a new chat: ✅ agent translated it, cited rule 9, and kept App.tsx's double-quote style (rule 8).
+- documentation.md rule 2 (from F27) said .agents/rules did not exist; it went stale once the folder was created. Updated it to "read .agents/rules/ and memory-bank/".
