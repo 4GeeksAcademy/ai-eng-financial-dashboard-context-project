@@ -1,53 +1,23 @@
-# reglas.md
+# reglas.md — Reglas propuestas (trazadas a hallazgos)
 
-## Reglas propuestas para el proyecto
+Cada regla cita al menos un hallazgo de [practicas.md](./practicas.md). Las reglas aceptadas se
+implementan en `.agents/rules/` (columna "Archivo").
 
-### Arquitectura
-- No utilizar datos mockeados en endpoints productivos. Los datos simulados solo deben usarse en entornos de desarrollo o pruebas.
-  - **Ejemplo:**
-    - ✅ Usar datos reales en producción.
-    - ❌ `generate_mock_movements(seed=42)` en endpoints productivos.
-- Mantener la separación de responsabilidades: rutas, lógica de negocio y modelos deben estar en archivos/módulos independientes.
-  - **Ejemplo:**
-    - ✅ `routes.py`, `models.py`, `services.py` separados.
-- Implementar autenticación y autorización en todos los endpoints sensibles del backend.
-  - **Ejemplo:**
-    - ✅ Uso de JWT, OAuth2 o API Keys en endpoints protegidos.
+Reglas de la versión anterior descartadas: "no usar mocks en producción", "implementar JWT/OAuth2",
+"middleware centralizado de errores", "documentar todo con docstrings". Son buenas prácticas genéricas o
+roadmap, no restricciones que un agente pueda cumplir en una tarea pequeña de este repo sin rediseñarlo.
 
-### Seguridad
-- Configurar CORS para permitir únicamente orígenes confiables en producción.
-  - **Ejemplo:**
-    - ✅ `allow_origins=["https://midominio.com"]` en producción.
-    - ❌ `allow_origins=["*"]` en producción.
-- No exponer información sensible (claves, tokens, datos de usuarios) en logs, respuestas o variables públicas.
-- Validar y sanitizar todos los datos recibidos desde el frontend antes de procesarlos.
-
-### Naming (Nomenclatura)
-- Usar nombres descriptivos y consistentes para variables, funciones, componentes y modelos.
-  - **Ejemplo:**
-    - ✅ `totalIncome`, `FinancialMovement`, `get_metrics_summary`
-    - ❌ `data1`, `temp`, `foo`
-
-### Testing
-- Mantener y actualizar pruebas automatizadas para toda la lógica crítica del backend y frontend.
-- Cubrir casos de error y validaciones en los tests.
-  - **Ejemplo:**
-    - ✅ Pruebas para respuestas exitosas y para errores (inputs inválidos, excepciones, etc.)
-
-### DX (Developer Experience)
-- Usar tipado estricto en todo el código (TypeScript en frontend, Pydantic en backend).
-- Proveer mensajes de error claros y útiles tanto para usuarios como para desarrolladores.
-- Documentar funciones, componentes y endpoints con comentarios o docstrings.
-  - **Ejemplo:**
-    - ✅ `/** Calcula los KPIs principales */` en funciones de frontend.
-    - ✅ `"""Devuelve el resumen de métricas agrupado por mes"""` en backend.
-
-### Manejo de errores
-- Implementar manejo centralizado de errores en el backend (middleware o decoradores).
-- Evitar que errores no controlados lleguen al usuario final.
-  - **Ejemplo:**
-    - ✅ Middleware de FastAPI para capturar y formatear errores.
-
-### Documentación
-- Mantener actualizados los archivos README y context.md con instrucciones claras de uso, despliegue y contribución.
-- Documentar reglas y convenciones en un archivo practicas.md o similar.
+| ID | Regla propuesta | Hallazgos | Archivo |
+|---|---|---|---|
+| R-1 | Nuevos endpoints van en `backend/app/routes.py` bajo `/api/metrics...`, con `response_model` Pydantic, lógica en función pura y filtros reutilizando `filter_movements` | H-1, H-2 | `backend-api.md` |
+| R-2 | No cambiar `seed=42`, el número de movimientos ni la lógica de fechas del mock sin actualizar los tests que dependen de él | H-3, H-13 | `backend-api.md` |
+| R-3 | Un campo/enum nuevo o renombrado se cambia a la vez en `routes.py`, `financial-types.ts` y `frontend/specs/api-types.ts` | H-6, H-7 | `contratos-api-ui.md` |
+| R-4 | Wire en snake_case, modelo de UI en camelCase; documentar si un valor es ratio o porcentaje antes de pasarlo a `formatPercent` | H-6, H-8 | `contratos-api-ui.md` |
+| R-5 | Cálculos y formateo en `frontend/src/lib/financial-utils.ts` (funciones puras + test); los componentes solo presentan | H-4, H-13 | `frontend-dashboard.md` |
+| R-6 | Fechas `YYYY-MM-DD` de la API se tratan como strings de calendario: nunca `new Date(isoDate)` + getters locales | H-10 | `frontend-dashboard.md` |
+| R-7 | Ningún texto de UI fija periodos/años: se derivan de los datos | H-3, H-11 | `frontend-dashboard.md` |
+| R-8 | Antes de dar una tarea por terminada, ejecutar pytest/vitest/lint/build **dentro de los contenedores** y reportar el resultado real | H-13, H-14, H-15 | `verificacion-y-commits.md` |
+| R-9 | Commits: un objetivo por commit, mensaje con el *porqué*; registrar afirmaciones corregidas en `verification.md` | H-15 (sin CI, la revisión es manual) | `verificacion-y-commits.md` |
+| R-10 | No usar `VITE_API_BASE_URL` en local; si se define, debe ser un origen completo (`http://host:puerto`) | H-16 | `frontend-dashboard.md` |
+| R-11 | No ampliar CORS, debug ni exponer puertos nuevos; señalar H-17 en cualquier tarea de despliegue | H-17 | `backend-api.md` |
+| R-12 | Contexto de agentes solo en `.agents/` y `memory-bank/`; actualizar `memory-bank/estado-actual.md` al cerrar una tarea que cambie gaps | H-18 | `verificacion-y-commits.md` |
