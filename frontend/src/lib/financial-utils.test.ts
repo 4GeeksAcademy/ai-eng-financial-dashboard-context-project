@@ -5,6 +5,7 @@ import {
   computeMonthlyData,
   formatCurrency,
   formatPercent,
+  formatPeriodRange,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -100,6 +101,46 @@ describe("computeMonthlyData", () => {
       outcome: 0,
       profitPercent: 100,
     });
+  });
+});
+
+describe("computeMonthlyData with first-of-month dates", () => {
+  it("keeps day-01 movements in their own month regardless of timezone", () => {
+    const firstOfMonth: FinancialMovement[] = [
+      {
+        create_date: "2026-01-01",
+        amount: 400,
+        operation_type: "income",
+        category: "sales",
+        business_type: "B2B",
+      },
+    ];
+
+    expect(computeMonthlyData(firstOfMonth)).toEqual([
+      { month: "Jan 2026", income: 400, outcome: 0, profitPercent: 100 },
+    ]);
+  });
+});
+
+describe("formatPeriodRange", () => {
+  it("returns the first and last month of the data", () => {
+    expect(formatPeriodRange(sampleMovements)).toBe("Jan 2024 – Feb 2024");
+  });
+
+  it("uses calendar months for day-01 boundaries", () => {
+    const movements: FinancialMovement[] = [
+      { ...sampleMovements[0], create_date: "2025-11-01" },
+      { ...sampleMovements[0], create_date: "2026-10-28" },
+    ];
+    expect(formatPeriodRange(movements)).toBe("Nov 2025 – Oct 2026");
+  });
+
+  it("returns a single month when all data is in one month", () => {
+    expect(formatPeriodRange([sampleMovements[0]])).toBe("Jan 2024");
+  });
+
+  it("returns an empty string without data", () => {
+    expect(formatPeriodRange([])).toBe("");
   });
 });
 
