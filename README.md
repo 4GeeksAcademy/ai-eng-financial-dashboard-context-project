@@ -42,6 +42,8 @@ _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI ba
 docker compose up --build
 ```
 
+This stack is for development, not production: the frontend runs the Vite dev server, and the backend runs Uvicorn with reload and debugpy exposed on port 5678. Do not expose this configuration as a production deployment. The hostname `backend` in the Vite proxy is internal to the Compose network; it is not a browser URL. A production deployment needs its own serving, routing and security configuration.
+
 The frontend uses the Vite proxy for `/api` by default, so no extra environment variables are required in local development or Codespaces.
 If you need to target a different backend origin, copy `frontend/.env.example` to `.env` and set `VITE_API_BASE_URL`.
 

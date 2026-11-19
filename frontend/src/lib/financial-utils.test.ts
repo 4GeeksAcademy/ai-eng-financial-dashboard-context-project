@@ -4,6 +4,7 @@ import {
   computeKPIs,
   computeMonthlyData,
   formatCurrency,
+  formatPeriodRange,
   formatPercent,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
@@ -33,6 +34,15 @@ const sampleMovements: FinancialMovement[] = [
 ];
 
 describe("computeKPIs", () => {
+  it("returns zero metrics when there are no movements", () => {
+    expect(computeKPIs([])).toEqual({
+      totalIncome: 0,
+      totalOutcome: 0,
+      profit: 0,
+      profitPercent: 0,
+    });
+  });
+
   it("calculates totals and profit values", () => {
     const metrics = computeKPIs(sampleMovements);
 
@@ -61,6 +71,27 @@ describe("computeKPIs", () => {
 });
 
 describe("computeMonthlyData", () => {
+  it("preserves calendar months at month and year boundaries", () => {
+    const movements: FinancialMovement[] = [
+      { ...sampleMovements[0], create_date: "2025-12-31", amount: 100 },
+      { ...sampleMovements[0], create_date: "2026-01-01", amount: 200 },
+      { ...sampleMovements[1], create_date: "2026-01-31", amount: 50 },
+      { ...sampleMovements[0], create_date: "2026-02-01", amount: 300 },
+    ];
+    const monthlyData = computeMonthlyData(movements);
+
+    expect(monthlyData).toEqual([
+      { month: "Dec 2025", income: 100, outcome: 0, profitPercent: 100 },
+      { month: "Jan 2026", income: 200, outcome: 50, profitPercent: 75 },
+      { month: "Feb 2026", income: 300, outcome: 0, profitPercent: 100 },
+    ]);
+    expect(formatPeriodRange(monthlyData)).toBe("Dec 2025 - Feb 2026");
+  });
+
+  it("returns no monthly points for empty movements", () => {
+    expect(computeMonthlyData([])).toEqual([]);
+  });
+
   it("returns chronological year-month points with aggregated totals", () => {
     const unsortedCrossYearMovements: FinancialMovement[] = [
       {
@@ -100,6 +131,18 @@ describe("computeMonthlyData", () => {
       outcome: 0,
       profitPercent: 100,
     });
+  });
+});
+
+describe("formatPeriodRange", () => {
+  it("formats the first and last available months", () => {
+    expect(formatPeriodRange(computeMonthlyData(sampleMovements))).toBe(
+      "Jan 2024 - Feb 2024",
+    );
+  });
+
+  it("reports when period data is unavailable", () => {
+    expect(formatPeriodRange([])).toBe("Period unavailable");
   });
 });
 
