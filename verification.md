@@ -48,3 +48,13 @@ Regla bajo prueba: `verificacion-y-commits.md` punto 1 (lint obligatorio en camb
 Al ejecutar `npm run lint` tras la Tarea 1, falló por 6 errores **previos** en `frontend/specs/api-types.ts`.
 La regla obliga a reportarlo en vez de ignorarlo; se corrigió `interface X extends Array<T> {}` →
 `type X = T[]` (mismo tipo, sin cambio de contrato). `npm run lint` ✅, `tsc --strict` sobre `specs/` ✅.
+
+## Fase 4 — Memory bank
+
+| Afirmación en `memory-bank/` v1 | Corrección | Cómo se comprobó |
+|---|---|---|
+| "Backend con endpoints para ... mock de movimientos" / "Lógica de negocio en `frontend/src/lib/`" | Se listan las 9 rutas reales y cuáles usa la UI (solo `/api/metrics`) | `openapi.json`, `App.tsx` |
+| "No se detectan tests automatizados en el frontend" | Vitest con 10 tests | `npm test` |
+| `pydantic` en requirements | Transitiva (pydantic 2.14.4 vía fastapi 0.165.0) | `python -c "import pydantic,fastapi"` en el contenedor |
+| "Falta i18n", "añadir autenticación", "CI/CD", "base de datos" como prioridades | Retirado el roadmap genérico; las prioridades se derivan de gaps con evidencia y de `frontend/specs/` | — |
+| Borrador v2: KPI "Profit Margin %" | La etiqueta es "Profit Margin" | `kpi-row.tsx:39` |

@@ -1,36 +1,51 @@
-# Financial Metrics Dashboard — Overview
+# Overview del producto — Financial Metrics Dashboard
 
-## Evidencia verificada del repositorio
+> Verificado contra el código y los servicios en ejecución el 2026-11-19. Detalle de comprobaciones en
+> `../context.md` y `../verification.md`.
 
-### Descripción general
-Este proyecto es un dashboard financiero que permite visualizar y analizar datos financieros clave. Está compuesto por dos grandes módulos:
-- **Frontend:** React + TypeScript (ubicado en `frontend/`)
-- **Backend:** FastAPI en Python (ubicado en `backend/`)
+## Qué es
+Dashboard ejecutivo de métricas financieras de una empresa con dos líneas de negocio (B2B y B2C).
+Es un proyecto de formación de 4Geeks Academy (ver `README.md`) cuyo objetivo es practicar dejar un repo
+"listo para agentes"; no hay usuarios ni despliegue productivo.
 
-### Funcionalidad principal
-- Visualización de métricas ejecutivas: ingresos, egresos, utilidad y margen de utilidad.
-- Gráficas de evolución mensual de ingresos y egresos.
-- Visualización de margen de utilidad en el tiempo.
-- Componentes reutilizables para tarjetas KPI y gráficos.
-- Backend expone endpoints para obtener datos financieros y métricas agregadas.
+## Qué ve el usuario (una sola pantalla, `frontend/src/App.tsx`)
+- Cabecera "Financial Overview" con el periodo de los datos, derivado de los movimientos (`formatPeriodRange`).
+- 4 KPIs (`kpi-row.tsx`): Total Income, Total Outcome, Profit y Profit Margin.
+- Gráfica mensual ingresos vs. egresos (`income-outcome-chart.tsx`) y gráfica de margen % mensual
+  (`profit-percent-chart.tsx`), cargadas con `React.lazy`.
+- Estados de carga (skeleton) y error (`role="alert"`) si la API falla.
 
-### Evidencia en el repositorio
-- Documentación en `README.md` y `README.es.md`.
-- Componentes clave en `frontend/src/components/dashboard/` como `kpi-card.tsx`, `income-outcome-chart.tsx`, `profit-percent-chart.tsx`, `dashboard-header.tsx`, `kpi-row.tsx`.
-- Lógica de negocio y tipos en `frontend/src/lib/`.
-- Backend con modelos y rutas en `backend/app/routes.py`.
-- Pruebas automatizadas en `backend/tests/`.
-- Despliegue local con Docker (`docker-compose.yml`).
+## Modelo de dominio
+`FinancialMovement` (`backend/app/routes.py`, espejo en `frontend/src/lib/financial-types.ts`):
 
-### Ejecución local
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-- Documentación API: http://localhost:8000/docs
+| Campo | Valores |
+|---|---|
+| `create_date` | fecha `YYYY-MM-DD` |
+| `amount` | float positivo |
+| `operation_type` | `income` \| `outcome` |
+| `category` | `suppliers`, `sales`, `operational`, `administrative`, `others` |
+| `business_type` | `B2B` \| `B2C` |
 
-### Referencias
-- [README.md](../README.md)
-- [README.es.md](../README.es.md)
-- [context.md](../context.md)
+## Origen de los datos
+No hay base de datos. `generate_mock_movements(seed=42)` genera en cada request 360 movimientos
+(12 meses × 30) para los 12 meses anteriores al mes actual. Los resultados son deterministas para un
+mismo mes, pero el rango se desplaza con `date.today()`.
 
----
-Este overview se basa únicamente en archivos y estructuras presentes en el repositorio.
+## API (FastAPI, `backend/app/routes.py`)
+| Ruta | Para qué | Usada por la UI |
+|---|---|---|
+| `GET /health` | healthcheck | no |
+| `GET /api/metrics` | movimientos filtrables por fecha, categoría, tipo | **sí** |
+| `GET /api/metrics/facets` | valores de filtros y rango de fechas | no |
+| `GET /api/metrics/summary` | income/outcome/net por día, semana o mes | no |
+| `GET /api/metrics/categories/top` | top categorías por importe | no |
+| `GET /api/metrics/comparison` | neto vs. periodo anterior (`start_date`, `end_date` obligatorios) | no |
+| `GET /api/metrics/alerts` | meses con egresos sobre la media histórica × umbral | no |
+| `GET /api/metrics/b2b`, `/b2c` | movimientos por línea de negocio | no |
+
+Las rutas no usadas por la UI están especificadas para futuras funcionalidades en `frontend/specs/`.
+
+## Cómo se ejecuta
+`docker compose up --build` → frontend `http://localhost:5173`, API `http://localhost:8000`,
+OpenAPI `http://localhost:8000/docs`, debugpy `:5678`. El frontend llama a `/api/...` y Vite lo reenvía
+a `http://backend:8000` (`frontend/vite.config.ts`).
