@@ -10,6 +10,7 @@ interface KPICardProps {
   icon: LucideIcon
   variant: 'income' | 'outcome' | 'profit' | 'profitPercent'
   loading?: boolean
+  iconDecorative?: boolean
 }
 
 const variantStyles: Record<KPICardProps['variant'], { badge: string; icon: string }> = {
@@ -31,7 +32,15 @@ const variantStyles: Record<KPICardProps['variant'], { badge: string; icon: stri
   },
 }
 
-export function KPICard({ label, value, helperText, icon: Icon, variant, loading }: KPICardProps) {
+export function KPICard({
+  label,
+  value,
+  helperText,
+  icon: Icon,
+  variant,
+  loading,
+  iconDecorative = true,
+}: KPICardProps) {
   const styles = variantStyles[variant]
 
   if (loading) {
@@ -56,11 +65,17 @@ export function KPICard({ label, value, helperText, icon: Icon, variant, loading
           <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase text-pretty">
             {label}
           </span>
-          <span className={cn('p-1.5 rounded-lg', styles.badge)}>
-            <Icon size={16} className={styles.icon} />
+          <span aria-hidden={iconDecorative ? 'true' : undefined} className={cn('p-1.5 rounded-lg', styles.badge)}>
+            <Icon
+              size={16}
+              className={styles.icon}
+              aria-hidden={iconDecorative ? 'true' : undefined}
+              focusable={iconDecorative ? 'false' : undefined}
+              aria-label={iconDecorative ? undefined : `${label} icon`}
+            />
           </span>
         </div>
-        <p className="text-3xl font-semibold tracking-tight text-foreground">{value}</p>
+        <p className="text-3xl font-semibold tracking-tight text-foreground tabular-nums">{value}</p>
         <p className="text-xs text-muted-foreground leading-relaxed">{helperText}</p>
       </CardContent>
     </Card>
