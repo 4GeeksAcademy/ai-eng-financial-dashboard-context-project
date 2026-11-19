@@ -34,17 +34,17 @@ export interface FinancialMovement {
 /**
  * Colección de movimientos financieros.
  */
-export interface MetricsResponse extends Array<FinancialMovement> {}
+export type MetricsResponse = FinancialMovement[];
 
 /**
  * Colección de movimientos financieros de la línea B2B.
  */
-export interface MetricsB2BResponse extends Array<FinancialMovement> {}
+export type MetricsB2BResponse = FinancialMovement[];
 
 /**
  * Colección de movimientos financieros de la línea B2C.
  */
-export interface MetricsB2CResponse extends Array<FinancialMovement> {}
+export type MetricsB2CResponse = FinancialMovement[];
 
 export interface SummaryEntry {
   /**
@@ -69,7 +69,7 @@ export interface SummaryEntry {
 /**
  * Colección de agregados por periodo.
  */
-export interface SummaryResponse extends Array<SummaryEntry> {}
+export type SummaryResponse = SummaryEntry[];
 
 export interface ComparisonResponse {
   /**
@@ -152,7 +152,7 @@ export interface AlertEntry {
 /**
  * Colección de alertas de anomalías de gasto.
  */
-export interface AlertResponse extends Array<AlertEntry> {}
+export type AlertResponse = AlertEntry[];
 
 export interface CategoryEntry {
   /**
@@ -176,4 +176,4 @@ export interface CategoryEntry {
 /**
  * Colección de categorías ordenadas por monto total.
  */
-export interface TopCategoriesResponse extends Array<CategoryEntry> {}
+export type TopCategoriesResponse = CategoryEntry[];

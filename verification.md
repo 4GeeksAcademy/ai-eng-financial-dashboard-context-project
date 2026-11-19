@@ -21,3 +21,30 @@ Entorno: Codespace, `docker compose up --build` (2026-11-19).
 
 Verificado en ejecución: `/health` → `{"status":"ok"}`; `localhost:5173/api/metrics/facets` (proxy) → JSON;
 pytest 15 passed; vitest 5 passed; `npm run build` OK.
+
+## Fase 3 — Validación de reglas con tareas reales
+
+Las 3 reglas previas (`alcance-claro.md`, `nombre-claro.md`, `razon-clara.md`) se retiraron: eran
+genéricas y `nombre-claro.md` citaba un endpoint inexistente (`/movements/summary`). Su contenido útil
+(naming, *porqué* en commits) quedó en `contratos-api-ui.md` y `verificacion-y-commits.md`.
+
+### Tarea 1 — Bug de zona horaria (H-10) + periodo hardcodeado (H-11)
+Regla bajo prueba: `.agents/rules/frontend-dashboard.md` (puntos 1–3) y `verificacion-y-commits.md`.
+
+| Qué pidió la regla | Qué se hizo | Resultado |
+|---|---|---|
+| Test con día `01` antes del cambio | Test nuevo en `financial-utils.test.ts` | ❌ en `TZ=America/Bogota`: `expected 'Dec 2025' to equal 'Jan 2026'` (bug reproducido) |
+| Fechas como string, no `new Date(iso)` | `toYearMonthKey` usa `isoDate.slice(0, 7)` | ✅ |
+| Cálculo en `lib/`, no en componentes | `formatPeriodRange` en `financial-utils.ts` + 4 tests | ✅ |
+| Nada hardcodeado | `App.tsx` pasa `period={formatPeriodRange(movements)}`; header sin default "2024" | ✅ |
+| Ejecutar en contenedores | `npm test` con `TZ=America/Bogota`, `UTC`, `Asia/Tokyo` → 10/10; `npm run build` OK | ✅ |
+
+**Iteración de la regla:** la primera versión del comando de verificación era
+`TZ=... docker compose exec -e TZ=... frontend npm test`; el `TZ` del host no llega al contenedor, así que
+se simplificó a `docker compose exec -e TZ=America/Bogota frontend npm test` y se marcó como obligatorio al tocar fechas.
+
+### Tarea 2 — Lint roto (H-14)
+Regla bajo prueba: `verificacion-y-commits.md` punto 1 (lint obligatorio en cambios `.ts`).
+Al ejecutar `npm run lint` tras la Tarea 1, falló por 6 errores **previos** en `frontend/specs/api-types.ts`.
+La regla obliga a reportarlo en vez de ignorarlo; se corrigió `interface X extends Array<T> {}` →
+`type X = T[]` (mismo tipo, sin cambio de contrato). `npm run lint` ✅, `tsc --strict` sobre `specs/` ✅.
