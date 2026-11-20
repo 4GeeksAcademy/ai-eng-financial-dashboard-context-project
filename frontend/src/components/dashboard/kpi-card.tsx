@@ -42,8 +42,8 @@ export function KPICard({ label, value, helperText, icon: Icon, variant, loading
             <Skeleton className="h-4 w-28" />
             <Skeleton className="h-8 w-8 rounded-lg" />
           </div>
-          <Skeleton className="h-8 w-36" />
-          <Skeleton className="h-3 w-44" />
+          <Skeleton className="h-9 w-36" />
+          <Skeleton className="h-5 w-44" />
         </CardContent>
       </Card>
     )
