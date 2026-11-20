@@ -4,6 +4,18 @@ import {
   type MonthlyDataPoint,
 } from "./financial-types";
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+const monthYearFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  year: "numeric",
+});
+
 function toYearMonthKey(value: Date): string {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -12,51 +24,48 @@ function formatMonthYearLabel(yearMonthKey: string): string {
   const [yearText, monthText] = yearMonthKey.split("-");
   const year = Number(yearText);
   const month = Number(monthText) - 1;
-  return new Date(year, month, 1).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
+  return monthYearFormatter.format(new Date(year, month, 1));
 }
 
-export function computeKPIs(movements: FinancialMovement[]): KPIMetrics {
-  const totalIncome = movements
-    .filter((m) => m.operation_type === "income")
-    .reduce((sum, m) => sum + m.amount, 0);
-
-  const totalOutcome = movements
-    .filter((m) => m.operation_type === "outcome")
-    .reduce((sum, m) => sum + m.amount, 0);
-
-  const profit = totalIncome - totalOutcome;
-  const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
-
-  return { totalIncome, totalOutcome, profit, profitPercent };
+export interface FinancialSummary {
+  metrics: KPIMetrics;
+  monthlyData: MonthlyDataPoint[];
 }
 
-export function computeMonthlyData(
+export function computeFinancialSummary(
   movements: FinancialMovement[],
-): MonthlyDataPoint[] {
+): FinancialSummary {
+  let totalIncome = 0;
+  let totalOutcome = 0;
   const monthlyMap: Record<string, { income: number; outcome: number }> = {};
 
-  for (const m of movements) {
-    const yearMonthKey = toYearMonthKey(new Date(m.create_date));
-    if (!monthlyMap[yearMonthKey]) {
-      monthlyMap[yearMonthKey] = { income: 0, outcome: 0 };
-    }
+  for (const movement of movements) {
+    const yearMonthKey = toYearMonthKey(new Date(movement.create_date));
+    const monthlyTotals = monthlyMap[yearMonthKey] ??= { income: 0, outcome: 0 };
 
-    if (m.operation_type === "income") {
-      monthlyMap[yearMonthKey].income += m.amount;
+    if (movement.operation_type === "income") {
+      totalIncome += movement.amount;
+      monthlyTotals.income += movement.amount;
     } else {
-      monthlyMap[yearMonthKey].outcome += m.amount;
+      totalOutcome += movement.amount;
+      monthlyTotals.outcome += movement.amount;
     }
   }
 
-  return Object.keys(monthlyMap)
+  const profit = totalIncome - totalOutcome;
+  const metrics = {
+    totalIncome,
+    totalOutcome,
+    profit,
+    profitPercent: totalIncome > 0 ? (profit / totalIncome) * 100 : 0,
+  };
+
+  const monthlyData = Object.keys(monthlyMap)
     .sort()
     .map((yearMonthKey) => {
       const { income, outcome } = monthlyMap[yearMonthKey];
-      const profit = income - outcome;
-      const profitPercent = income > 0 ? (profit / income) * 100 : 0;
+      const monthlyProfit = income - outcome;
+      const profitPercent = income > 0 ? (monthlyProfit / income) * 100 : 0;
       return {
         month: formatMonthYearLabel(yearMonthKey),
         income,
@@ -64,15 +73,22 @@ export function computeMonthlyData(
         profitPercent,
       };
     });
+
+  return { metrics, monthlyData };
+}
+
+export function computeKPIs(movements: FinancialMovement[]): KPIMetrics {
+  return computeFinancialSummary(movements).metrics;
+}
+
+export function computeMonthlyData(
+  movements: FinancialMovement[],
+): MonthlyDataPoint[] {
+  return computeFinancialSummary(movements).monthlyData;
 }
 
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+  return currencyFormatter.format(value);
 }
 
 export function formatPercent(value: number): string {

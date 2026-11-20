@@ -71,7 +71,9 @@ describe('App loading and error announcements', () => {
     await finishLoading()
     const markup = renderApp()
 
-    expect(markup).not.toContain('role="status"')
+    expect(markup).not.toContain('Loading financial information.')
+    expect(markup).toContain('role="status"')
+    expect(markup).toContain('Loading financial chart.')
     expect(markup).not.toContain('role="alert"')
   })
 
@@ -83,7 +85,7 @@ describe('App loading and error announcements', () => {
 
     expect(markup).toContain('role="alert"')
     expect(markup).toContain('Unable to load financial information. Please check the backend API.')
-    expect(markup).not.toContain('role="status"')
+    expect(markup).not.toContain('Loading financial information.')
   })
 })
 

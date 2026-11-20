@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   computeKPIs,
+  computeFinancialSummary,
   computeMonthlyData,
   formatCurrency,
   formatPercent,
@@ -31,6 +32,15 @@ const sampleMovements: FinancialMovement[] = [
     business_type: "B2C",
   },
 ];
+
+describe("computeFinancialSummary", () => {
+  it("calculates KPI and monthly chart data in one summary", () => {
+    const summary = computeFinancialSummary(sampleMovements);
+
+    expect(summary.metrics).toEqual(computeKPIs(sampleMovements));
+    expect(summary.monthlyData).toEqual(computeMonthlyData(sampleMovements));
+  });
+});
 
 describe("computeKPIs", () => {
   it("calculates totals and profit values", () => {
