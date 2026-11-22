@@ -7,6 +7,7 @@ Esta carpeta resume el producto que puede verificarse en el repositorio, el stac
 - [Overview del producto](overview.md)
 - [Stack tecnológico](stack.md)
 - [Estado actual](current-state.md)
+- [Progreso de skills y verificaciones](progress.md)
 
 ## Criterio de evidencia
 
