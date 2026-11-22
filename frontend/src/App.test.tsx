@@ -87,6 +87,17 @@ describe('App loading and error announcements', () => {
     expect(markup).toContain('Unable to load financial information. Please check the backend API.')
     expect(markup).not.toContain('Loading financial information.')
   })
+
+  it('announces an unsuccessful API response as an error', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 503 }))
+
+    await finishLoading()
+    const markup = renderApp()
+
+    expect(markup).toContain('role="alert"')
+    expect(markup).toContain('Unable to load financial information. Please check the backend API.')
+    expect(markup).not.toContain('Loading financial information.')
+  })
 })
 
 describe('App heading hierarchy', () => {
