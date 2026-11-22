@@ -52,3 +52,34 @@ If you need to target a different backend origin, copy `frontend/.env.example` t
 ---
 
 This and many other projects are built by students as part of the [Career Programs](https://4geeksacademy.com/compare-programs) at [4Geeks Academy](https://4geeksacademy.com). By [@marcogonzalo](https://github.com/marcogonzalo) and [other contributors](https://github.com/4GeeksAcademy/ai-eng-financial-dashboard-context-project/graphs/contributors). Find out more about [AI Engineering](https://4geeksacademy.com/en/coding-bootcamps/ai-engineering), [Data Science & Machine Learning](https://4geeksacademy.com/en/coding-bootcamps/data-science-ml), [Cybersecurity](https://4geeksacademy.com/en/coding-bootcamps/cybersecurity) and [Full-Stack Software Developer with AI](https://4geeksacademy.com/en/coding-bootcamps/full-stack-developer).
+
+---
+
+## AI Engineering Assignment — Project Context
+
+This repository contains the completed four-phase project investigation and AI agent configuration assignment.
+
+### Assignment Deliverables
+
+| Phase | Description | Documentation |
+|---|---|---|
+| 1 | Project investigation and verification | [Phase 1 Report](PHASE1-VERIFICATION.md) |
+| 2 | Engineering findings and proposed rules | [Phase 2 Findings](PHASE2-FINDINGS.md) |
+| 3 | Agent rules and testing | [Phase 3 Test Results](PHASE3-TEST-RESULTS.md) |
+| 4 | Persistent project context | [Memory Bank](memory-bank/) |
+
+### Agent Configuration
+
+- [Frontend Agent Rules](.agents/rules/frontend-rules.md)
+- [Backend Agent Rules](.agents/rules/backend-rules.md)
+
+### Project Memory Bank
+
+- [Product Overview](memory-bank/product-overview.md)
+- [Tech Stack](memory-bank/tech-stack.md)
+- [Current Status](memory-bank/current-status.md)
+
+### Verification
+
+The frontend production build completed successfully after an AI-assisted component creation task. The Phase 3 report documents the test results and limitations.
+
