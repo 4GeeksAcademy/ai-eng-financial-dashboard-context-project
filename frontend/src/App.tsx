@@ -16,12 +16,46 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isFinancialMovement(value: unknown): value is FinancialMovement {
+  if (!isRecord(value)) return false;
+
+  const validDate =
+    typeof value.create_date === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(value.create_date) &&
+    !Number.isNaN(Date.parse(`${value.create_date}T00:00:00Z`));
+
+  return (
+    validDate &&
+    typeof value.amount === "number" &&
+    Number.isFinite(value.amount) &&
+    (value.operation_type === "income" || value.operation_type === "outcome") &&
+    (value.category === "suppliers" ||
+      value.category === "sales" ||
+      value.category === "operational" ||
+      value.category === "administrative" ||
+      value.category === "others") &&
+    (value.business_type === "B2B" || value.business_type === "B2C")
+  );
+}
+
+function isFinancialMovementArray(value: unknown): value is FinancialMovement[] {
+  return Array.isArray(value) && value.every(isFinancialMovement);
+}
+
 async function fetchFinancialData(signal?: AbortSignal): Promise<FinancialMovement[]> {
   const response = await fetch(`${API_BASE_URL}/api/metrics`, { signal });
   if (!response.ok) {
     throw new Error(`Failed to fetch financial data: ${response.status}`);
   }
-  return response.json();
+  const payload: unknown = await response.json();
+  if (!isFinancialMovementArray(payload)) {
+    throw new TypeError("Invalid financial metrics response");
+  }
+  return payload;
 }
 
 function App() {
