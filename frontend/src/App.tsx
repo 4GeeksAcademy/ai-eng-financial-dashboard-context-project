@@ -16,8 +16,8 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
-async function fetchFinancialData(): Promise<FinancialMovement[]> {
-  const response = await fetch(`${API_BASE_URL}/api/metrics`);
+async function fetchFinancialData(signal?: AbortSignal): Promise<FinancialMovement[]> {
+  const response = await fetch(`${API_BASE_URL}/api/metrics`, { signal });
   if (!response.ok) {
     throw new Error(`Failed to fetch financial data: ${response.status}`);
   }
@@ -25,26 +25,36 @@ async function fetchFinancialData(): Promise<FinancialMovement[]> {
 }
 
 function App() {
-  const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
-  const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
+  const [dashboardData, setDashboardData] = useState<{
+    metrics: KPIMetrics | null;
+    monthlyData: MonthlyDataPoint[];
+  }>({ metrics: null, monthlyData: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { metrics, monthlyData } = dashboardData;
   const period = loading ? "Loading..." : formatPeriodRange(monthlyData);
 
   useEffect(() => {
-    fetchFinancialData()
+    const controller = new AbortController();
+
+    fetchFinancialData(controller.signal)
       .then((movements) => {
-        setMetrics(computeKPIs(movements));
-        setMonthlyData(computeMonthlyData(movements));
+        setDashboardData({
+          metrics: computeKPIs(movements),
+          monthlyData: computeMonthlyData(movements),
+        });
       })
-      .catch(() => {
+      .catch((cause: unknown) => {
+        if (cause instanceof DOMException && cause.name === "AbortError") return;
         setError(
           "No se pudo cargar la informacion financiera. Revisa la API de backend.",
         );
       })
       .finally(() => {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       });
+
+    return () => controller.abort();
   }, []);
 
   return (
