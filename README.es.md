@@ -42,6 +42,8 @@ _Dashboard de métricas financieras con frontend en React + TypeScript y backend
 docker compose up --build
 ```
 
+Este entorno es de desarrollo, no de producción: el frontend ejecuta el servidor de Vite y el backend ejecuta Uvicorn con recarga y debugpy expuesto en el puerto 5678. No publiques esta configuración como un despliegue de producción. El nombre `backend` del proxy de Vite es interno a la red de Compose; no es una URL para el navegador. Un despliegue de producción necesita su propia configuración de servidores, enrutamiento y seguridad.
+
 El frontend usa por defecto el proxy de Vite para `/api`, así que no necesitas variables de entorno extra ni en desarrollo local ni en Codespaces.
 Si necesitas apuntar a otro backend, copia `frontend/.env.example` como `.env` y define `VITE_API_BASE_URL`.
 
