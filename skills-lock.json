@@ -8,6 +8,13 @@
       "skillPath": "skills/accessibility/SKILL.md",
       "computedHash": "c668809f5df57feb87cc06f1bc37fb340d1d92e26bacb6edbeab9258d22e76a5"
     },
+    "seo": {
+      "source": "addyosmani/web-quality-skills",
+      "commit": "afa8da942115f2961fdbfa80807ea0b232ff6c00",
+      "sourceType": "github",
+      "skillPath": "skills/seo/SKILL.md",
+      "computedHash": "fa30e94756c5c40663f4527e8220a985393abbe3a6256e43d02589948027467e"
+    },
     "typescript-best-practices": {
       "source": "cursor/plugins",
       "commit": "7a583913eb1b8d1a0ee76753d1a2cf072e7b54f9",
