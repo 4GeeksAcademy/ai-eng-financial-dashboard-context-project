@@ -50,7 +50,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
   if (loading) {
     return (
-      <Card className="border-border/60">
+      <Card role="status" aria-live="polite" aria-busy="true" className="border-border/60">
         <CardHeader className="pb-4">
           <Skeleton className="h-5 w-52" />
           <Skeleton className="h-3 w-64 mt-1" />
@@ -72,10 +72,12 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
+          <div role="status" className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
             No data available to display
           </div>
         ) : (
+          <>
+          <div role="img" aria-label="Monthly profit margin percentage; an equivalent data table follows.">
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
@@ -106,6 +108,13 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
               />
             </LineChart>
           </ResponsiveContainer>
+          </div>
+          <table className="sr-only">
+            <caption>Monthly profit margin percentages</caption>
+            <thead><tr><th scope="col">Month</th><th scope="col">Profit margin</th></tr></thead>
+            <tbody>{data.map((point) => <tr key={point.month}><th scope="row">{point.month}</th><td>{point.profitPercent.toFixed(1)}%</td></tr>)}</tbody>
+          </table>
+          </>
         )}
       </CardContent>
     </Card>
