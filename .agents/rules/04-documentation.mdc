@@ -1,0 +1,30 @@
+---
+name: Documentación
+description: Reglas sobre README, AGENTS.md y título del index.html
+---
+
+# Documentación
+
+## README bilingüe sincronizado (DOC-01)
+
+**Alcance**: `README.md` y `README.es.md`
+
+Cualquier cambio en las secciones "How to run", "Expected agents directory structure" o "Recommended steps" debe aplicarse a **ambos** archivos en la misma PR.
+
+**Guía**: Usa diff comparativo entre ambos archivos antes de hacer commit.
+
+## AGENTS.md como índice (DOC-02)
+
+**Alcance**: `AGENTS.md`, `.agents/rules/`, `.agents/skills/`, `memory-bank/`
+
+Este archivo es la puerta de entrada: no le agregues reglas inline. Las reglas nuevas van como archivos `.md` separados en `.agents/rules/`.
+
+**Guía**: Crea un archivo por categoría (ej. `06-dependencies.mdc`). Mantén `AGENTS.md` como índice breve.
+
+## Título del index.html (DOC-03)
+
+**Alcance**: `frontend/index.html`
+
+Cambia `<title>frontend</title>` por un título descriptivo del proyecto.
+
+**Guía**: Usa `<title>Financial Metrics Dashboard</title>`.

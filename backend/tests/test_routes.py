@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import date
 
 from fastapi.testclient import TestClient
@@ -12,7 +13,10 @@ client = TestClient(app)
 def test_generate_mock_movements_returns_full_year_sorted_data():
     movements = generate_mock_movements(seed=42)
 
-    assert len(movements) == 360
+    assert len(movements) == 144
+    assert Counter(movement.create_date.month for movement in movements) == {
+        month: 12 for month in range(1, 13)
+    }
     assert movements == sorted(movements, key=lambda item: item.create_date)
 
 
@@ -187,3 +191,13 @@ def test_metrics_alerts_returns_anomaly_candidates():
             "baseline_average",
             "increase_ratio",
         }
+
+
+def test_metrics_averages_returns_monthly_average_income_and_outcome():
+    response = client.get("/api/metrics/averages")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert set(payload.keys()) == {"average_income", "average_outcome"}
+    assert payload["average_income"] >= 0
+    assert payload["average_outcome"] >= 0

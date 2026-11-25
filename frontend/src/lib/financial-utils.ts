@@ -30,7 +30,13 @@ export function computeKPIs(movements: FinancialMovement[]): KPIMetrics {
   const profit = totalIncome - totalOutcome;
   const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
 
-  return { totalIncome, totalOutcome, profit, profitPercent };
+  return {
+    totalIncome,
+    totalOutcome,
+    profit,
+    profitPercent,
+    totalTransactions: movements.length,
+  };
 }
 
 export function computeMonthlyData(
@@ -77,4 +83,13 @@ export function formatCurrency(value: number): string {
 
 export function formatPercent(value: number): string {
   return `${value.toFixed(1)}%`;
+}
+
+export function hasFinancialData(data: MonthlyDataPoint[]): boolean {
+  return data.some(
+    (point) =>
+      point.income > 0 ||
+      point.outcome > 0 ||
+      point.profitPercent !== 0,
+  );
 }

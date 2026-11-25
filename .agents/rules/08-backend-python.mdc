@@ -1,0 +1,25 @@
+---
+name: Backend Python
+description: Reglas sobre imports futuros y dependencias Python
+---
+
+# Backend Python
+
+## from __future__ import annotations (PY-01)
+
+**Alcance**: Todos los archivos `.py` en `backend/`
+
+Debe estar siempre en la primera línea de cualquier archivo Python nuevo. Sin ella los tipos `Literal` y forward-reference pueden causar `NameError` en tiempo de ejecución.
+
+**Guía**: Arranca cada archivo con:
+```python
+from __future__ import annotations
+```
+
+## requirements.txt mínimo (PY-02)
+
+**Alcance**: `backend/requirements.txt`
+
+Dependencias actuales: `fastapi`, `uvicorn[standard]`, `debugpy`, `pytest`, `pytest-cov`, `httpx`. El proyecto no tiene base de datos.
+
+**Guía**: Cualquier nueva dependencia debe justificarse en la PR. SQLAlchemy, Alembic, Pandas o NumPy requieren aprobación explícita.

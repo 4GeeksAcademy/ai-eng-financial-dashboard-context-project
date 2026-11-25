@@ -1,0 +1,28 @@
+---
+name: Arquitectura del proyecto
+description: Reglas sobre estructura frontend/backend, seed determinista y proxy de desarrollo
+---
+
+# Arquitectura
+
+## Separación frontend/backend (ARC-01)
+
+**Alcance**: `backend/app/routes.py` ↔ `frontend/src/lib/financial-utils.ts`
+
+Las transformaciones de datos deben implementarse primero en el backend y luego reflejarse en el frontend. No agregues lógica de negocio nueva solo en el frontend.
+
+**Guía**: Si añades una nueva métrica financiera créala como endpoint en `routes.py` primero, después actualiza `financial-utils.ts` para consumirla.
+
+## Seed determinista (ARC-02)
+
+**Alcance**: `backend/app/routes.py` — función `generate_mock_movements(seed=42)`
+
+Los 8 endpoints de la API usan `seed=42` fijo. No cambies la seed ni la lógica de `_build_movement()` sin actualizar todos los tests.
+
+**Guía**: Si modificas la generación de datos, ejecuta `pytest backend/tests/` íntegro para verificar que nada se rompe.
+
+## Proxy de Vite y hot-reload (ARC-03)
+
+**Alcance**: `frontend/vite.config.ts` (proxy), `backend/Dockerfile` (`--reload`)
+
+No elimines el bloque proxy de `vite.config.ts`. Para apuntar a otro backend usa `VITE_API_BASE_URL` (documentado en `frontend/.env.example`). El `--reload` del backend debe mantenerse en desarrollo.

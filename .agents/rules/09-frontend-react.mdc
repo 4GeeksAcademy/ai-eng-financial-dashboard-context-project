@@ -1,0 +1,23 @@
+---
+name: Frontend React
+description: Reglas sobre organización de componentes y fetch de datos
+---
+
+# Frontend React
+
+## Separación ui/ vs dashboard/ (REACT-01)
+
+**Alcance**: `frontend/src/components/ui/` y `frontend/src/components/dashboard/`
+
+- `components/ui/`: componentes genéricos y reutilizables (card, skeleton, button, input...)
+- `components/dashboard/`: componentes del dominio (KPI, charts, header...)
+
+**Guía**: Si un componente importa tipos de `financial-types.ts` o llama a utils de negocio, va en `dashboard/`. Si es puramente visual, va en `ui/`.
+
+## Fetch centralizado en App.tsx (REACT-02)
+
+**Alcance**: `frontend/src/App.tsx`
+
+`App.tsx` es el único componente que debe contener `useEffect` con llamadas a la API. Los componentes hijos (`KPIRow`, `IncomeOutcomeChart`, `ProfitPercentChart`) reciben `data` y `loading` como props.
+
+**Guía**: No agregues `fetch` ni `useEffect` en componentes de `components/dashboard/`. Si necesitas un nuevo origen de datos, centraliza la llamada en `App.tsx` o crea un custom hook.

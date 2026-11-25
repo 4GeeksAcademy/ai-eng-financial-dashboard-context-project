@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { type MonthlyDataPoint } from '@/lib/financial-types'
+import { hasFinancialData } from '@/lib/financial-utils'
 import {
   LineChart,
   Line,
@@ -62,7 +63,7 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
     )
   }
 
-  const hasData = data.some((d) => d.profitPercent !== 0)
+  const hasData = hasFinancialData(data)
 
   return (
     <Card className="border-border/60">

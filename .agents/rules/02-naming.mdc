@@ -1,0 +1,30 @@
+---
+name: Convenciones de nombrado
+description: Reglas sobre snake_case, idioma de UI y nombres de tests
+---
+
+# Naming
+
+## Consistencia de idioma en la UI (NAM-01)
+
+**Alcance**: `frontend/src/App.tsx` y todos los componentes
+
+Todos los strings visibles en la UI deben estar en **inglés**. El proyecto tiene README bilingüe, pero el código fuente es en inglés.
+
+**Guía**: Si necesitas español, implementa un sistema de i18n. No mezcles idiomas directamente en componentes JSX.
+
+## snake_case en tipos de API (NAM-02)
+
+**Alcance**: `frontend/src/lib/financial-types.ts`
+
+Los tipos que reflejan la respuesta de la API usan `snake_case` (`create_date`, `operation_type`). Mantenlos así para que el parseo JSON directo funcione sin transformación.
+
+**Guía**: Usa `camelCase` solo en props y estado interno de componentes que no se serialicen a la API.
+
+## Nombres de archivos de test (NAM-03)
+
+**Alcance**: `frontend/src/**/*.test.ts`, `backend/tests/test_*.py`
+
+Frontend: `*.test.ts` junto al módulo. Backend: `test_*.py` dentro de `backend/tests/`.
+
+**Guía**: No crees `__init__.py` dentro de `backend/tests/`. No uses `.spec.ts` en el frontend.

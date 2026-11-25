@@ -1,0 +1,109 @@
+---
+name: Prompts de validación de reglas
+description: 10 prompts para verificar que un agente ha respetado cada rule de .agents/rules/
+---
+
+# Prompts de Validación
+
+Usa estos prompts para comprobar que un agente sigue las reglas del proyecto.
+Cada prompt mapea a una regla de `.agents/rules/`.
+
+---
+
+## 1. ARC-01 — Separación frontend/backend
+
+**Prompt**: *"Añade un nuevo endpoint `/api/metrics/profit-margin` que devuelva el margen de beneficio total, y muéstralo en el dashboard."*
+
+**Verificación**: El agente debe crear el endpoint en `routes.py` **y luego** actualizar `financial-utils.ts`. Si toca solo el frontend → ❌.
+
+---
+
+## 2. ARC-02 — Seed determinista
+
+**Prompt**: *"Haz que los datos mock generen 12 movimientos por mes en vez de 30."*
+
+**Verificación**: Tras el cambio, `pytest backend/tests/` debe pasar ✅. Si los tests fallan porque el agente no los actualizó → ❌.
+
+cd C:\Users\Usuario\Documents\4Geeks\ai-eng-financial-dashboard-context-project
+.\backend\.venv\Scripts\python.exe -m pytest backend\tests -q
+
+---
+
+## 3. NAM-01 — Inglés en UI
+
+**Prompt**: *"El error de conexión en el dashboard debería decir 'Could not load financial data' en vez del texto actual."*
+
+**Verificación**: El agente debe encontrar y cambiar el string en español en `App.tsx`. Si lo deja o añade otro en español → ❌.
+
+---
+
+## 4. TST-01 — Cobertura de endpoints
+
+**Prompt**: *"Crea un endpoint `/api/metrics/averages` que devuelva el promedio mensual de ingresos y gastos."*
+
+**Verificación**: Además del endpoint, debe existir un test `test_metrics_averages` en `test_routes.py`. Si no → ❌.
+
+---
+
+## 5. TST-02 — Tests de frontend
+
+**Prompt**: *"Asegura que cuando no hay datos, los gráficos muestren el mensaje correcto. Verifica que funcione."*
+
+**Verificación**: Debe crear tests en `financial-utils.test.ts` (o cerca) que cubran el estado vacío. Si solo lo prueba manual → ❌.
+
+---
+
+## 6. DOC-03 — Título del index.html
+
+**Prompt**: *"El título de la pestaña del navegador no es descriptivo. Cámbialo."*
+
+**Verificación**: Debe modificar `<title>` en `index.html`. Si toca otro archivo (ej. `App.tsx`) → ❌.
+
+---
+
+## 7. DX-02 — Alias @/ en imports
+
+**Prompt**: *"Crea un nuevo componente `SummaryCard` en `components/dashboard/` que use datos del KPI."*
+
+**Verificación**: Los imports deben usar `@/lib/...` y no rutas relativas como `../../lib/...`. ❌ si usa rutas relativas.
+
+---
+
+## 8. STY-01 — Variables en index.css
+
+**Prompt**: *"Añade un nuevo color para highlight en el dashboard, tanto en modo claro como oscuro."*
+
+**Verificación**: La variable debe agregarse en `index.css` dentro de `:root` y `.dark`. ❌ si se hardcodea en un componente.
+
+---
+
+## 9. REACT-02 — Fetch centralizado
+
+**Prompt**: *"Añade un nuevo indicador: 'Total Transactions' (número total de movimientos)."*
+
+**Verificación**: La nueva prop debe fluir desde `App.tsx` hacia los hijos. ❌ si el agente pone un `useEffect` dentro de `kpi-card.tsx` o `dashboard-header.tsx`.
+
+---
+
+## 10. SEC-01 — CORS restrictivo
+
+**Prompt**: *"Prepara el backend para producción. Haz que los orígenes permitidos sean configurables."*
+
+**Verificación**: Debe leer de variable de entorno (`os.getenv`) y usarla en `CORSMiddleware`. ❌ si deja `["*"]` fijo.
+
+---
+
+## 📋 Tabla rápida
+
+| # | Regla | Prompt corto | Señal de éxito ✅ |
+|---|-------|-------------|-------------------|
+| 1 | ARC-01 | Nuevo endpoint + dashboard | Endpoint en `routes.py` **antes** que frontend |
+| 2 | ARC-02 | 12 mov/mes | `pytest` pasa tras modificar generación |
+| 3 | NAM-01 | Traducir error | String en inglés en `App.tsx` |
+| 4 | TST-01 | Endpoint /averages | Test nuevo en `test_routes.py` |
+| 5 | TST-02 | No data | Test con `hasData=false` |
+| 6 | DOC-03 | Título pestaña | `<title>` cambiado en `index.html` |
+| 7 | DX-02 | SummaryCard | Imports con `@/` |
+| 8 | STY-01 | Color highlight | Variable en `:root` y `.dark` |
+| 9 | REACT-02 | Total Transactions | Nuevo prop, sin useEffect en hijos |
+| 10 | SEC-01 | CORS configurable | `os.getenv("CORS_ORIGINS")` en `main.py` |

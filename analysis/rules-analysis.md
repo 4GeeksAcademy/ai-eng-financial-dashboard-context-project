@@ -14,7 +14,7 @@
 - **Regla**: Cualquier nueva métrica o transformación de datos debe implementarse **primero en el backend** y reflejarse **después** en los utils del frontend. No agregues lógica de negocio nueva solo en el frontend sin su contraparte backend.
 
 ### Regla ARC-02: No romper la seed determinista del backend
-- **Convención existente**: `generate_mock_movements(seed=42)` produce 360 movimientos reproducibles, usados por todos los endpoints.
+- **Convención existente**: `generate_mock_movements(seed=42)` produce 144 movimientos reproducibles (12 por mes), usados por todos los endpoints.
 - **Riesgo**: Cambiar la seed o la lógica de generación altera los resultados de todos los endpoints y tests, rompiendo la consistencia.
 - **Hecho**: `/api/metrics`, `/api/metrics/facets`, `/api/metrics/summary`, `/api/metrics/comparison`, `/api/metrics/alerts`, `/api/metrics/b2b` y `/api/metrics/b2c` llaman todos a `generate_mock_movements(seed=42)` por separado — son 8 llamadas idénticas por request.
 - **Regla**: Mantén `seed=42` fijo. Si modificas `_build_movement()` o `generate_mock_movements()`, actualiza también todos los tests que dependan de los valores generados. No elimines el parámetro `seed`.

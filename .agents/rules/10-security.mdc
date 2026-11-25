@@ -1,0 +1,17 @@
+---
+name: Seguridad
+description: Reglas sobre configuración de CORS
+---
+
+# Seguridad
+
+## CORS restrictivo en producción (SEC-01)
+
+**Alcance**: `backend/app/main.py` — configuración `CORSMiddleware`
+
+En desarrollo `allow_origins=["*"]` es aceptable. En producción debe restringirse al origen exacto del frontend.
+
+**Guía**: Reemplaza `["*"]` por la URL del frontend. Considera usar una variable de entorno:
+```python
+allow_origins=os.getenv("CORS_ORIGINS", "*").split(",")
+```

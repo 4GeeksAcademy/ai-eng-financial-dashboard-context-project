@@ -1,0 +1,26 @@
+---
+name: Dependencias
+description: Reglas sobre versiones de imágenes Docker y stack de librerías
+---
+
+# Dependencias
+
+## Etiquetas de imágenes Docker (DEP-01)
+
+**Alcance**: `backend/Dockerfile` (`python:3.13-slim`), `frontend/Dockerfile` (`node:24-alpine`)
+
+Estas etiquetas son flotantes. Para builds reproducibles, considera usar SHA256 digests. Como mínimo, documenta el SHA verificado.
+
+**Guía**: Ejemplo: `FROM python:3.13-slim@sha256:abc123...`
+
+## Sin librerías duplicadas (DEP-02)
+
+**Alcance**: `frontend/package.json`
+
+El stack ya cubre:
+- 📊 **Gráficos**: Recharts
+- 🎨 **Iconos**: Lucide React
+- 🧩 **UI**: shadcn/ui (componentes locales en `components/ui/`)
+- 💅 **Estilos**: Tailwind CSS v4
+
+**Guía**: Antes de agregar una dependencia npm, verifica que la funcionalidad no esté cubierta por el stack existente. No instales Chart.js, Heroicons ni librerías de UI genéricas.

@@ -9,7 +9,7 @@
 | 3 | ✅ | **Backend: FastAPI (Python)** — API REST con Python 3.13, FastAPI y Uvicorn |
 | 4 | ❓ | **Contenedores Docker** — Dos servicios definidos en docker-compose.yml con sus respectivos Dockerfiles |
 | 5 | ✅ | **Proxy Vite** — Las llamadas a `/api` se redirigen automáticamente al backend en desarrollo |
-| 6 | ✅ | **Endpoint `/api/metrics`** — Devuelve 360 movimientos financieros mock con seed determinista (42) |
+| 6 | ✅ | **Endpoint `/api/metrics`** — Devuelve 144 movimientos financieros mock (12 por mes) con seed determinista (42) |
 | 7 | ✅ | **Endpoint `/api/metrics/facets`** — Metadatos de filtros disponibles (tipos, categorías, rango de fechas) |
 | 8 | ✅ | **Endpoint `/api/metrics/summary`** — Resumen agrupado por día, semana o mes |
 | 9 | ✅ | **Endpoint `/api/metrics/categories/top`** — Top N categorías por importe según tipo de operación |

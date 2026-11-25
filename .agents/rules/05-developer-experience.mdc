@@ -1,0 +1,30 @@
+---
+name: Developer Experience (DX)
+description: Reglas sobre debug remoto, alias de imports y lockfile
+---
+
+# Developer Experience
+
+## Puerto de depuración (DX-01)
+
+**Alcance**: `docker-compose.yml` y `backend/Dockerfile`
+
+El puerto `5678` para debugpy debe mapearse en ambos archivos. No lo elimines sin avisar.
+
+**Guía**: Si cambias el puerto de debug, actualiza tanto `Dockerfile` (`EXPOSE`) como `docker-compose.yml` (`ports`).
+
+## Alias @/ para imports (DX-02)
+
+**Alcance**: `frontend/src/` y `tsconfig.app.json`
+
+Todos los imports dentro de `frontend/src/` deben usar el alias `@/`. No uses imports relativos que suban más de un nivel (`../../lib/`).
+
+**Guía**:
+- ✅ Correcto: `import { cn } from '@/lib/utils'`
+- ❌ Incorrecto: `import { cn } from '../../lib/utils'`
+
+## package-lock.json (DX-03)
+
+**Alcance**: `frontend/package-lock.json`
+
+Si cambias dependencias, regenera el lockfile con `npm install` local y haz commit del cambio. No lo edites manualmente.

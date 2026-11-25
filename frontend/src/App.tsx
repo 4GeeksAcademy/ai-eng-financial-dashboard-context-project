@@ -7,15 +7,16 @@ import {
   type FinancialMovement,
   type KPIMetrics,
   type MonthlyDataPoint,
+  type ProfitMargin,
 } from "@/lib/financial-types";
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
-async function fetchFinancialData(): Promise<FinancialMovement[]> {
-  const response = await fetch(`${API_BASE_URL}/api/metrics`);
+async function fetchFinancialData<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`);
   if (!response.ok) {
-    throw new Error(`Failed to fetch financial data: ${response.status}`);
+    throw new Error(`Failed to fetch financial data from ${path}: ${response.status}`);
   }
   return response.json();
 }
@@ -27,15 +28,16 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchFinancialData()
-      .then((movements) => {
-        setMetrics(computeKPIs(movements));
+    Promise.all([
+      fetchFinancialData<FinancialMovement[]>("/api/metrics"),
+      fetchFinancialData<ProfitMargin>("/api/metrics/profit-margin"),
+    ])
+      .then(([movements, { profit_margin }]) => {
+        setMetrics({ ...computeKPIs(movements), profitPercent: profit_margin });
         setMonthlyData(computeMonthlyData(movements));
       })
       .catch(() => {
-        setError(
-          "No se pudo cargar la informacion financiera. Revisa la API de backend.",
-        );
+        setError("Could not load financial data");
       })
       .finally(() => {
         setLoading(false);

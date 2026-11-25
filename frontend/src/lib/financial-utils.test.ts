@@ -5,6 +5,7 @@ import {
   computeMonthlyData,
   formatCurrency,
   formatPercent,
+  hasFinancialData,
 } from "./financial-utils";
 import type { FinancialMovement } from "./financial-types";
 
@@ -41,6 +42,7 @@ describe("computeKPIs", () => {
       totalOutcome: 250,
       profit: 1250,
       profitPercent: (1250 / 1500) * 100,
+      totalTransactions: 3,
     });
   });
 
@@ -110,5 +112,24 @@ describe("formatters", () => {
 
   it("formats percent with one decimal", () => {
     expect(formatPercent(15.555)).toBe("15.6%");
+  });
+});
+
+describe("hasFinancialData", () => {
+  it("returns true with relevant data", () => {
+    expect(
+      hasFinancialData([
+        { month: "Jan 2024", income: 100, outcome: 50, profitPercent: 50 },
+      ]),
+    ).toBe(true);
+  });
+
+  it("returns false when all values are zero or empty", () => {
+    expect(hasFinancialData([])).toBe(false);
+    expect(
+      hasFinancialData([
+        { month: "Jan 2024", income: 0, outcome: 0, profitPercent: 0 },
+      ]),
+    ).toBe(false);
   });
 });

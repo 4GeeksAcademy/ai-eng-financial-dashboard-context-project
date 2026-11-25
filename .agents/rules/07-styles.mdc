@@ -1,0 +1,26 @@
+---
+name: Estilos y Tema
+description: Reglas sobre variables CSS centralizadas y combinación de clases
+---
+
+# Estilos
+
+## Variables de tema en index.css (STY-01)
+
+**Alcance**: `frontend/src/index.css`
+
+Todas las variables de color deben definirse aquí, en los bloques `:root` (modo claro) y `.dark` (modo oscuro). No uses valores de color hardcodeados en componentes.
+
+**Guía**:
+- ✅ Correcto: `className="text-[var(--income-badge-fg)]"`
+- ❌ Incorrecto: `className="text-green-600"`
+
+## Función cn() para clases (STY-02)
+
+**Alcance**: `frontend/src/lib/utils.ts` — función `cn()`
+
+Usa siempre `cn()` para combinar clases Tailwind. No concatenes con template strings.
+
+**Guía**:
+- ✅ Correcto: `cn('bg-card', className)`
+- ❌ Incorrecto: `` `bg-card ${className}` ``

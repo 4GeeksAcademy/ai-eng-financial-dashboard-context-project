@@ -10,11 +10,16 @@ export interface FinancialMovement {
   business_type: BusinessType
 }
 
+export interface ProfitMargin {
+  profit_margin: number
+}
+
 export interface KPIMetrics {
   totalIncome: number
   totalOutcome: number
   profit: number
   profitPercent: number
+  totalTransactions: number
 }
 
 export interface MonthlyDataPoint {

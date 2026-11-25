@@ -37,6 +37,7 @@
   --outcome-badge-fg: oklch(0.42 0.15 27);
   --profit-badge: oklch(0.93 0.04 255);
   --profit-badge-fg: oklch(0.38 0.15 255);
+  --highlight: oklch(0.88 0.12 85);
 }
 
 .dark {
@@ -73,6 +74,7 @@
   --outcome-badge-fg: oklch(0.72 0.16 27);
   --profit-badge: oklch(0.22 0.05 255);
   --profit-badge-fg: oklch(0.72 0.16 255);
+  --highlight: oklch(0.72 0.14 85);
 }
 
 @theme inline {
@@ -97,6 +99,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-highlight: var(--highlight);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

@@ -55,6 +55,15 @@ class MetricsComparison(BaseModel):
     delta_pct: float | None
 
 
+class ProfitMargin(BaseModel):
+    profit_margin: float
+
+
+class MonthlyAverages(BaseModel):
+    average_income: float
+    average_outcome: float
+
+
 class MetricsAlert(BaseModel):
     period: str
     outcome_total: float
@@ -98,7 +107,7 @@ def generate_mock_movements(seed: int | None = None) -> list[FinancialMovement]:
     movements: list[FinancialMovement] = []
     for month in range(1, 13):
         income_probability = random.uniform(0.45, 0.7)
-        for _ in range(30):
+        for _ in range(12):
             movements.append(_build_movement(month, income_probability, today))
     movements.sort(key=lambda item: item.create_date)
     return movements
@@ -259,6 +268,15 @@ def get_metrics(
     return ensure_chronological_order(filtered)
 
 
+@router.get("/api/metrics/profit-margin", response_model=ProfitMargin)
+def get_profit_margin() -> ProfitMargin:
+    movements = generate_mock_movements(seed=42)
+    income = sum(item.amount for item in movements if item.operation_type == "income")
+    outcome = sum(item.amount for item in movements if item.operation_type == "outcome")
+    margin = (income - outcome) / income * 100 if income > 0 else 0
+    return ProfitMargin(profit_margin=margin)
+
+
 @router.get("/api/metrics/facets", response_model=MetricsFacets)
 def get_metrics_facets() -> MetricsFacets:
     movements = generate_mock_movements(seed=42)
@@ -389,3 +407,34 @@ def get_b2c_metrics(
         movements, start_date, end_date, category, operation_type
     )
     return ensure_chronological_order(filtered)
+
+
+@router.get("/api/metrics/averages", response_model=MonthlyAverages)
+def get_monthly_averages(
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
+    category: Category | None = Query(default=None),
+    business_type: BusinessType | None = Query(default=None),
+) -> MonthlyAverages:
+    movements = generate_mock_movements(seed=42)
+    if business_type is not None:
+        movements = [
+            item for item in movements if item.business_type == business_type
+        ]
+    filtered = filter_movements(
+        movements, start_date, end_date, category, operation_type=None
+    )
+    monthly_summary = summarize_movements(filtered, group_by="month")
+    if not monthly_summary:
+        return MonthlyAverages(average_income=0.0, average_outcome=0.0)
+
+    average_income = round(
+        sum(item.income for item in monthly_summary) / len(monthly_summary), 2
+    )
+    average_outcome = round(
+        sum(item.outcome for item in monthly_summary) / len(monthly_summary), 2
+    )
+    return MonthlyAverages(
+        average_income=average_income,
+        average_outcome=average_outcome,
+    )
